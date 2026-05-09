@@ -2,12 +2,18 @@
 
 import { Search, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import type { Locale } from "@/lib/i18n/settings";
+import { AdminMobileNav } from "./AdminMobileNav";
 
-export function AdminTopbar() {
+type Props = { locale: Locale };
+
+export function AdminTopbar({ locale }: Props) {
   const { t } = useTranslation();
   return (
     <header className="border-b border-ink/5 bg-white">
-      <div className="flex items-center gap-4 px-4 py-4 md:px-8">
+      <div className="flex items-center gap-3 px-4 py-4 md:gap-4 md:px-8">
+        <AdminMobileNav locale={locale} />
+
         <div className="relative flex-1 max-w-2xl">
           <Search
             size={16}

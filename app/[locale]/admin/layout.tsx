@@ -19,7 +19,7 @@ export default function AdminLayout({
       <div className="mx-auto grid min-h-screen w-full max-w-[1600px] grid-cols-1 lg:grid-cols-[280px_1fr]">
         <AdminSidebar locale={locale} />
         <div className="flex min-h-screen flex-col">
-          <AdminTopbar />
+          <AdminTopbar locale={locale} />
           <main className="flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
           <AdminFooter />
         </div>
