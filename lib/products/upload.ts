@@ -3,16 +3,27 @@ import path from "path";
 import { randomUUID } from "crypto";
 import { getAdminClient, STORAGE_BUCKET } from "@/lib/supabase/server";
 
-const ALLOWED = new Set(["image/png", "image/jpeg", "image/webp", "image/svg+xml"]);
-const MAX_BYTES = 5 * 1024 * 1024;
+export const ALLOWED_IMAGE_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/svg+xml"
+]);
+export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const ALLOWED = ALLOWED_IMAGE_TYPES;
+const MAX_BYTES = MAX_IMAGE_BYTES;
 
-function extFor(type: string, name: string): string {
+export function extForImage(type: string, name = ""): string {
   if (type === "image/png") return ".png";
   if (type === "image/jpeg") return ".jpg";
   if (type === "image/webp") return ".webp";
   if (type === "image/svg+xml") return ".svg";
   const fallback = path.extname(name).toLowerCase();
   return fallback || ".bin";
+}
+
+function extFor(type: string, name: string): string {
+  return extForImage(type, name);
 }
 
 export type UploadResult = { url: string } | { error: string };
@@ -22,9 +33,9 @@ let bucketEnsured = false;
 /**
  * Idempotently make sure the storage bucket exists and is public. Lets the
  * app self-bootstrap on a fresh Supabase project even if the SQL migration
- * wasn't run.
+ * wasn't run. Exported so the signed-upload-URL endpoint can reuse it.
  */
-async function ensureBucket(): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function ensureBucket(): Promise<{ ok: true } | { ok: false; error: string }> {
   if (bucketEnsured) return { ok: true };
   const sb = getAdminClient();
 

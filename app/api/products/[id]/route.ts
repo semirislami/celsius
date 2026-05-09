@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { deleteProduct, getProductById, updateProduct } from "@/lib/products/store";
-import { deleteUploadedImage, saveUploadedImage } from "@/lib/products/upload";
+import { deleteUploadedImage } from "@/lib/products/upload";
 import {
   BADGES,
   BRANDS,
@@ -21,75 +21,91 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   return NextResponse.json({ product });
 }
 
+/**
+ * Updates a product. JSON body — image (if changed) is uploaded directly to
+ * Storage from the browser, and only the new public URL is sent here.
+ */
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   const existing = await getProductById(params.id);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const ctype = req.headers.get("content-type") ?? "";
-  if (!ctype.includes("multipart/form-data")) {
-    return NextResponse.json({ error: "Expected multipart/form-data" }, { status: 415 });
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return NextResponse.json({ error: "invalid JSON body" }, { status: 400 });
+  }
+  if (!raw || typeof raw !== "object") {
+    return NextResponse.json({ error: "invalid body" }, { status: 400 });
   }
 
-  const form = await req.formData();
-  const get = (k: string) => {
-    const v = form.get(k);
-    return typeof v === "string" ? v.trim() : "";
+  const b = raw as Record<string, unknown>;
+  const has = (k: string) => Object.prototype.hasOwnProperty.call(b, k);
+  const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+  const optNum = (v: unknown) => {
+    if (v === undefined || v === null || v === "") return undefined;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : undefined;
   };
-  const has = (k: string) => form.has(k);
 
   const patch: ProductPatch = {};
-  if (has("name")) patch.name = get("name");
-  if (has("slug")) patch.slug = get("slug");
-  if (has("description")) patch.description = get("description");
-  if (has("priceMkd")) patch.priceMkd = Number(get("priceMkd"));
-  if (has("oldPriceMkd")) {
-    const v = get("oldPriceMkd");
-    patch.oldPriceMkd = v ? Number(v) : undefined;
+  if (has("name")) patch.name = str(b.name);
+  if (has("slug")) patch.slug = str(b.slug);
+  if (has("description")) patch.description = str(b.description);
+  if (has("priceMkd")) {
+    const n = Number(b.priceMkd);
+    if (!Number.isFinite(n) || n <= 0)
+      return NextResponse.json({ error: "priceMkd is invalid" }, { status: 400 });
+    patch.priceMkd = n;
   }
-  if (has("capacityBtu")) patch.capacityBtu = Number(get("capacityBtu"));
+  if (has("oldPriceMkd")) patch.oldPriceMkd = optNum(b.oldPriceMkd);
+  if (has("capacityBtu")) {
+    const n = Number(b.capacityBtu);
+    if (!Number.isFinite(n) || n <= 0)
+      return NextResponse.json({ error: "capacityBtu is invalid" }, { status: 400 });
+    patch.capacityBtu = n;
+  }
   if (has("brand")) {
-    const v = get("brand");
-    if (!(BRANDS as readonly string[]).includes(v)) return NextResponse.json({ error: "brand is invalid" }, { status: 400 });
+    const v = str(b.brand);
+    if (!(BRANDS as readonly string[]).includes(v))
+      return NextResponse.json({ error: "brand is invalid" }, { status: 400 });
     patch.brand = v as Brand;
   }
   if (has("energyClass")) {
-    const v = get("energyClass");
-    if (!(ENERGY_CLASSES as readonly string[]).includes(v)) return NextResponse.json({ error: "energyClass is invalid" }, { status: 400 });
+    const v = str(b.energyClass);
+    if (!(ENERGY_CLASSES as readonly string[]).includes(v))
+      return NextResponse.json({ error: "energyClass is invalid" }, { status: 400 });
     patch.energyClass = v as EnergyClass;
   }
   if (has("badge")) {
-    const v = get("badge");
+    const v = str(b.badge);
     patch.badge = v && (BADGES as readonly string[]).includes(v) ? (v as Badge) : null;
   }
-  if (has("guaranteeYears")) {
-    const v = get("guaranteeYears");
-    patch.guaranteeYears = v ? Number(v) || undefined : undefined;
-  }
-  if (has("noiseDb")) {
-    const v = get("noiseDb");
-    patch.noiseDb = v ? Number(v) || undefined : undefined;
-  }
+  if (has("guaranteeYears")) patch.guaranteeYears = optNum(b.guaranteeYears);
+  if (has("noiseDb")) patch.noiseDb = optNum(b.noiseDb);
 
-  const specKeys = ["specsCooling", "specsHeating", "specsSeer", "specsTemp", "specsNoise", "specsGas", "specsWifi"];
-  if (specKeys.some(has)) {
+  if (has("specs")) {
+    const specsRaw = (b.specs ?? {}) as Record<string, unknown>;
     const specs: ProductSpecs = {
-      cooling: get("specsCooling") || undefined,
-      heating: get("specsHeating") || undefined,
-      seer: get("specsSeer") || undefined,
-      temp: get("specsTemp") || undefined,
-      noise: get("specsNoise") || undefined,
-      gas: get("specsGas") || undefined,
-      wifi: get("specsWifi") || undefined
+      cooling: str(specsRaw.cooling) || undefined,
+      heating: str(specsRaw.heating) || undefined,
+      seer: str(specsRaw.seer) || undefined,
+      temp: str(specsRaw.temp) || undefined,
+      noise: str(specsRaw.noise) || undefined,
+      gas: str(specsRaw.gas) || undefined,
+      wifi: str(specsRaw.wifi) || undefined
     };
     patch.specs = Object.values(specs).some(Boolean) ? specs : undefined;
   }
 
-  const file = form.get("image");
-  if (file instanceof File && file.size > 0) {
-    const upload = await saveUploadedImage(file);
-    if ("error" in upload) return NextResponse.json({ error: upload.error }, { status: 400 });
-    await deleteUploadedImage(existing.imageUrl);
-    patch.imageUrl = upload.url;
+  // Image: client uploads directly and only sends the new URL
+  if (has("imageUrl")) {
+    const newUrl = str(b.imageUrl);
+    if (newUrl && newUrl !== existing.imageUrl) {
+      patch.imageUrl = newUrl;
+      // Best-effort cleanup of the previous image
+      await deleteUploadedImage(existing.imageUrl);
+    }
   }
 
   const updated = await updateProduct(params.id, patch);

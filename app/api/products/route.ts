@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createProduct, listProducts } from "@/lib/products/store";
-import { saveUploadedImage } from "@/lib/products/upload";
 import {
   BADGES,
   BRANDS,
@@ -20,51 +19,80 @@ export async function GET() {
   return NextResponse.json({ products });
 }
 
+/**
+ * Creates a product. Body is JSON — the image is uploaded directly to
+ * Supabase Storage from the browser via /api/products/upload-url, and only
+ * the resulting public URL is sent here. This keeps payloads small enough to
+ * fit through Vercel's 4.5MB serverless function body limit.
+ */
 export async function POST(req: Request) {
-  const ctype = req.headers.get("content-type") ?? "";
-  if (!ctype.includes("multipart/form-data")) {
-    return NextResponse.json({ error: "Expected multipart/form-data" }, { status: 415 });
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return NextResponse.json({ error: "invalid JSON body" }, { status: 400 });
   }
 
-  const form = await req.formData();
-  const get = (k: string) => {
-    const v = form.get(k);
-    return typeof v === "string" ? v.trim() : "";
+  const parsed = parseProductInput(raw, { requireImage: true });
+  if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+
+  const product = await createProduct(parsed.input);
+  return NextResponse.json({ product }, { status: 201 });
+}
+
+// ---------- shared parser (not exported — Next route files only allow HTTP methods) ----------
+
+function parseProductInput(
+  raw: unknown,
+  opts: { requireImage: boolean }
+): { ok: true; input: NewProductInput } | { ok: false; error: string } {
+  if (!raw || typeof raw !== "object") return { ok: false, error: "invalid body" };
+  const b = raw as Record<string, unknown>;
+
+  const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+  const num = (v: unknown) => {
+    if (typeof v === "number") return v;
+    if (typeof v === "string" && v.trim()) return Number(v);
+    return NaN;
+  };
+  const optNum = (v: unknown) => {
+    if (v === undefined || v === null || v === "") return undefined;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : undefined;
   };
 
-  const name = get("name");
-  const description = get("description");
-  const priceMkd = Number(get("priceMkd"));
-  const oldPriceRaw = get("oldPriceMkd");
-  const capacityBtu = Number(get("capacityBtu"));
-  const brandRaw = get("brand");
-  const energyRaw = get("energyClass");
-  const badgeRaw = get("badge");
-  const guaranteeRaw = get("guaranteeYears");
-  const noiseRaw = get("noiseDb");
-  const slug = get("slug");
+  const name = str(b.name);
+  const description = str(b.description);
+  const slug = str(b.slug);
+  const priceMkd = num(b.priceMkd);
+  const capacityBtu = num(b.capacityBtu);
+  const brandRaw = str(b.brand);
+  const energyRaw = str(b.energyClass);
+  const badgeRaw = str(b.badge);
+  const imageUrl = str(b.imageUrl);
 
-  if (!name || !description) return NextResponse.json({ error: "name and description are required" }, { status: 400 });
-  if (!Number.isFinite(priceMkd) || priceMkd <= 0) return NextResponse.json({ error: "priceMkd is invalid" }, { status: 400 });
-  if (!Number.isFinite(capacityBtu) || capacityBtu <= 0) return NextResponse.json({ error: "capacityBtu is invalid" }, { status: 400 });
-  if (!(BRANDS as readonly string[]).includes(brandRaw)) return NextResponse.json({ error: "brand is invalid" }, { status: 400 });
-  if (!(ENERGY_CLASSES as readonly string[]).includes(energyRaw)) return NextResponse.json({ error: "energyClass is invalid" }, { status: 400 });
+  if (!name) return { ok: false, error: "name is required" };
+  if (!description) return { ok: false, error: "description is required" };
+  if (!Number.isFinite(priceMkd) || priceMkd <= 0)
+    return { ok: false, error: "priceMkd is invalid" };
+  if (!Number.isFinite(capacityBtu) || capacityBtu <= 0)
+    return { ok: false, error: "capacityBtu is invalid" };
+  if (!(BRANDS as readonly string[]).includes(brandRaw))
+    return { ok: false, error: "brand is invalid" };
+  if (!(ENERGY_CLASSES as readonly string[]).includes(energyRaw))
+    return { ok: false, error: "energyClass is invalid" };
+  if (opts.requireImage && !imageUrl)
+    return { ok: false, error: "imageUrl is required" };
 
-  const file = form.get("image");
-  if (!(file instanceof File) || file.size === 0) {
-    return NextResponse.json({ error: "image is required" }, { status: 400 });
-  }
-  const upload = await saveUploadedImage(file);
-  if ("error" in upload) return NextResponse.json({ error: upload.error }, { status: 400 });
-
+  const specsRaw = (b.specs ?? {}) as Record<string, unknown>;
   const specs: ProductSpecs = {
-    cooling: get("specsCooling") || undefined,
-    heating: get("specsHeating") || undefined,
-    seer: get("specsSeer") || undefined,
-    temp: get("specsTemp") || undefined,
-    noise: get("specsNoise") || undefined,
-    gas: get("specsGas") || undefined,
-    wifi: get("specsWifi") || undefined
+    cooling: str(specsRaw.cooling) || undefined,
+    heating: str(specsRaw.heating) || undefined,
+    seer: str(specsRaw.seer) || undefined,
+    temp: str(specsRaw.temp) || undefined,
+    noise: str(specsRaw.noise) || undefined,
+    gas: str(specsRaw.gas) || undefined,
+    wifi: str(specsRaw.wifi) || undefined
   };
   const hasSpecs = Object.values(specs).some(Boolean);
 
@@ -73,17 +101,16 @@ export async function POST(req: Request) {
     slug,
     description,
     priceMkd,
-    oldPriceMkd: oldPriceRaw ? Number(oldPriceRaw) || undefined : undefined,
+    oldPriceMkd: optNum(b.oldPriceMkd),
     capacityBtu,
     brand: brandRaw as Brand,
     energyClass: energyRaw as EnergyClass,
     badge: (BADGES as readonly string[]).includes(badgeRaw) ? (badgeRaw as Badge) : null,
-    imageUrl: upload.url,
-    guaranteeYears: guaranteeRaw ? Number(guaranteeRaw) || undefined : undefined,
-    noiseDb: noiseRaw ? Number(noiseRaw) || undefined : undefined,
+    imageUrl,
+    guaranteeYears: optNum(b.guaranteeYears),
+    noiseDb: optNum(b.noiseDb),
     specs: hasSpecs ? specs : undefined
   };
 
-  const product = await createProduct(input);
-  return NextResponse.json({ product }, { status: 201 });
+  return { ok: true, input };
 }

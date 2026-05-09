@@ -14,6 +14,7 @@ import {
   ENERGY_CLASSES,
   type Product
 } from "@/lib/products/types";
+import { uploadProductImage } from "@/lib/products/uploadClient";
 
 type Mode =
   | { kind: "create" }
@@ -81,17 +82,63 @@ export function ProductForm({ locale, mode }: Props) {
 
     try {
       const fd = new FormData(e.currentTarget);
-      // Drop empty image when editing if user didn't pick a new one
-      if (isEdit) {
-        const f = fd.get("image");
-        if (f instanceof File && f.size === 0) fd.delete("image");
+      const file = fd.get("image");
+      const hasNewFile = file instanceof File && file.size > 0;
+
+      // Step 1: if a new image was picked, upload it directly to Supabase
+      // Storage. Server only ever sees the public URL, never the bytes.
+      let imageUrl = initial?.imageUrl ?? "";
+      if (hasNewFile) {
+        const result = await uploadProductImage(file as File);
+        imageUrl = result.publicUrl;
+      } else if (!isEdit) {
+        throw new Error(t("admin.form.errors.image"));
       }
-      const url = isEdit
-        ? `/api/products/${(mode as { kind: "edit"; product: Product }).product.id}`
-        : "/api/products";
+
+      // Step 2: send the rest as JSON.
+      const payload: Record<string, unknown> = {
+        name: fd.get("name"),
+        slug: fd.get("slug"),
+        description: fd.get("description"),
+        priceMkd: Number(fd.get("priceMkd")),
+        oldPriceMkd: fd.get("oldPriceMkd")
+          ? Number(fd.get("oldPriceMkd"))
+          : undefined,
+        capacityBtu: Number(fd.get("capacityBtu")),
+        brand: fd.get("brand"),
+        energyClass: fd.get("energyClass"),
+        badge: fd.get("badge") || null,
+        guaranteeYears: fd.get("guaranteeYears")
+          ? Number(fd.get("guaranteeYears"))
+          : undefined,
+        noiseDb: fd.get("noiseDb") ? Number(fd.get("noiseDb")) : undefined,
+        specs: {
+          cooling: fd.get("specsCooling") || undefined,
+          heating: fd.get("specsHeating") || undefined,
+          seer: fd.get("specsSeer") || undefined,
+          temp: fd.get("specsTemp") || undefined,
+          noise: fd.get("specsNoise") || undefined,
+          gas: fd.get("specsGas") || undefined,
+          wifi: fd.get("specsWifi") || undefined
+        }
+      };
+      // Only include imageUrl on edit if the user actually changed it,
+      // otherwise leave the existing one untouched server-side.
+      if (!isEdit) {
+        payload.imageUrl = imageUrl;
+      } else if (hasNewFile) {
+        payload.imageUrl = imageUrl;
+      }
+
+      const productId = isEdit
+        ? (mode as { kind: "edit"; product: Product }).product.id
+        : null;
+      const url = productId ? `/api/products/${productId}` : "/api/products";
+
       const res = await fetch(url, {
         method: isEdit ? "PUT" : "POST",
-        body: fd
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
