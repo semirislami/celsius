@@ -17,12 +17,58 @@ function extFor(type: string, name: string): string {
 
 export type UploadResult = { url: string } | { error: string };
 
+let bucketEnsured = false;
+
+/**
+ * Idempotently make sure the storage bucket exists and is public. Lets the
+ * app self-bootstrap on a fresh Supabase project even if the SQL migration
+ * wasn't run.
+ */
+async function ensureBucket(): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (bucketEnsured) return { ok: true };
+  const sb = getAdminClient();
+
+  const existing = await sb.storage.getBucket(STORAGE_BUCKET);
+  if (existing.data) {
+    bucketEnsured = true;
+    return { ok: true };
+  }
+  // getBucket returns an error when the bucket is missing; only treat
+  // a real "not found" as a signal to create. Anything else is a config issue.
+  const status = (existing.error as { status?: number } | undefined)?.status;
+  if (status && status !== 400 && status !== 404) {
+    console.error("[upload] getBucket failed:", existing.error);
+    return { ok: false, error: existing.error?.message ?? "could not query bucket" };
+  }
+
+  const created = await sb.storage.createBucket(STORAGE_BUCKET, {
+    public: true,
+    fileSizeLimit: `${MAX_BYTES}`
+  });
+  if (created.error) {
+    // Race-create from another invocation: treat "already exists" as success.
+    const msg = created.error.message?.toLowerCase() ?? "";
+    if (msg.includes("already exists") || msg.includes("duplicate")) {
+      bucketEnsured = true;
+      return { ok: true };
+    }
+    console.error("[upload] createBucket failed:", created.error);
+    return { ok: false, error: created.error.message ?? "could not create bucket" };
+  }
+
+  bucketEnsured = true;
+  return { ok: true };
+}
+
 export async function saveUploadedImage(file: File): Promise<UploadResult> {
   if (!file || !(file instanceof File) || file.size === 0) {
     return { error: "Empty upload" };
   }
   if (file.size > MAX_BYTES) return { error: "File too large (max 5MB)" };
   if (!ALLOWED.has(file.type)) return { error: `Unsupported type: ${file.type}` };
+
+  const ensured = await ensureBucket();
+  if (!ensured.ok) return { error: `bucket setup failed: ${ensured.error}` };
 
   const sb = getAdminClient();
   const filename = `${randomUUID()}${extFor(file.type, file.name)}`;
@@ -35,7 +81,28 @@ export async function saveUploadedImage(file: File): Promise<UploadResult> {
       cacheControl: "public, max-age=31536000, immutable",
       upsert: false
     });
-  if (uploadError) return { error: `upload failed: ${uploadError.message}` };
+  if (uploadError) {
+    console.error(
+      "[upload] storage.upload failed",
+      JSON.stringify(
+        {
+          bucket: STORAGE_BUCKET,
+          filename,
+          type: file.type,
+          size: file.size,
+          message: uploadError.message,
+          name: uploadError.name,
+          // @ts-expect-error — StorageError sometimes carries extra fields
+          status: uploadError.status,
+          // @ts-expect-error — same
+          statusCode: uploadError.statusCode
+        },
+        null,
+        2
+      )
+    );
+    return { error: `upload failed: ${uploadError.message}` };
+  }
 
   const { data } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(filename);
   if (!data?.publicUrl) return { error: "could not resolve public URL" };

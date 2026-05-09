@@ -1,11 +1,20 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Trim trailing slashes / whitespace — Vercel env paste can introduce them
+// and the storage client builds malformed URLs ("…supabase.co//storage/...")
+// which Supabase rejects with "Invalid path specified in request URL".
+function clean(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim().replace(/\/+$/, "");
+  return trimmed || undefined;
+}
 
-export const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET ?? "product-images";
+const URL = clean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+const ANON = clean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+const SERVICE = clean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+export const STORAGE_BUCKET = (clean(process.env.SUPABASE_STORAGE_BUCKET) ?? "product-images");
 
 let readSingleton: SupabaseClient | null = null;
 let adminSingleton: SupabaseClient | null = null;
