@@ -1,0 +1,13 @@
+node_modules/
+.next/
+out/
+build/
+.env
+.env.local
+.env.*.local
+*.tsbuildinfo
+.DS_Store
+
+# Local-only artifacts (Supabase is the source of truth in production)
+/data/
+/public/uploads/

@@ -1,0 +1,361 @@
+{
+  "brand": {
+    "name": "Celsius",
+    "tagline": "Teknologji inverter për komoditet të përsosur."
+  },
+  "nav": {
+    "home": "Kreu",
+    "shop": "Dyqani",
+    "about": "Rreth Nesh",
+    "contact": "Kontakt",
+    "openMenu": "Hap menynë",
+    "closeMenu": "Mbyll menynë"
+  },
+  "language": {
+    "switchTo": "Ndrysho gjuhën",
+    "macedonian": "Macedonian",
+    "albanian": "Albanian"
+  },
+  "common": {
+    "currency": "den.",
+    "search": "Kërko…",
+    "loading": "Duke ngarkuar…",
+    "tryAgain": "Provo përsëri"
+  },
+  "shop": {
+    "breadcrumbHome": "Kreu",
+    "breadcrumbShop": "Dyqani",
+    "title": "Sistemet më të mira inverter",
+    "subtitle": "Zbuloni koleksionin tonë premium të sistemeve inverter.",
+    "searchPlaceholder": "Kërko model ose BTU…",
+    "viewDetails": "Shih detajet",
+    "addToCart": "Shto në shportë",
+    "filters": {
+      "title": "Filtrat",
+      "clear": "Pastro filtrat",
+      "price": "Çmimi (DEN)",
+      "brand": "Marka",
+      "capacity": "Kapaciteti (BTU)",
+      "energyClass": "Klasa energjetike",
+      "brands": {
+        "celsius-prime": "Celsius Prime",
+        "inverter-pro": "Inverter Pro",
+        "eco-thermal": "EcoThermal"
+      },
+      "energy": {
+        "A+++": "A+++ (Premium Efficiency)",
+        "A++": "A++",
+        "A+": "A+"
+      }
+    },
+    "badge": {
+      "best-seller": "MË I SHITUR",
+      "new": "MODEL I RI",
+      "top-power": "TOP POWER"
+    },
+    "empty": {
+      "title": "Ende nuk ka produkte",
+      "subtitle": "Shtoni produktin tuaj të parë nga paneli admin.",
+      "cta": "Shko te admin"
+    },
+    "results": {
+      "showing": "Po shfaqen {{shown}} nga {{total}}",
+      "none": "Asnjë produkt nuk i përshtatet filtrave."
+    },
+    "pagination": { "previous": "Mbrapa", "next": "Përpara" }
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "Klimatizim inteligjent",
+      "titleLine1": "Temperaturë perfekte,",
+      "titleEmphasis": "pa mundim",
+      "titleLine2": ".",
+      "subtitle": "Përjetoni gjeneratën e radhës të teknologjisë inverter. Punë e qetë, kursim maksimal i energjisë dhe kontroll inteligjent nga telefoni juaj.",
+      "primaryCta": "Shih produktet",
+      "secondaryCta": "Mëso më shumë",
+      "badgeTitle": "Klasa A+++",
+      "badgeSubtitle": "Efikasiteti",
+      "imageAlt": "Pajisje inverter Celsius"
+    },
+    "features": {
+      "title": "Pse të zgjedhni Celsius?",
+      "subtitle": "Teknologji e projektuar për të përmirësuar cilësinë e jetës suaj përmes klimatizimit superior.",
+      "items": {
+        "energy": { "title": "Efikasitet energjetik", "body": "Inverterët tanë përdorin deri në 40% më pak energji krahasuar me kondicionerët standardë." },
+        "smart": { "title": "Kontroll inteligjent", "body": "Kontrolloni temperaturën nga kudo përmes aplikacionit tonë intuitiv mobil." },
+        "quiet": { "title": "Ultra i qetë", "body": "Punë aq e qetë sa do të harroni që pajisja është ndezur, me nivel zhurme prej vetëm 19dB." }
+      }
+    },
+    "products": {
+      "title": "Modelet tona më të shitura",
+      "subtitle": "Zgjidhni modelin perfekt për shtëpinë ose zyrën tuaj.",
+      "viewAll": "Shih të gjithë koleksionin",
+      "addToCart": "Shto në shportë",
+      "currency": "den.",
+      "items": {
+        "pro": { "name": "Celsius Inverter Pro X", "price": "34,900", "description": "I optimizuar për hapësira deri në 35m². Teknologjia Dual-Inverter." },
+        "air": { "name": "Pure Air Elite", "price": "42,500", "description": "Filter HEPA i integruar dhe jonizues për ajër të pastër." },
+        "mini": { "name": "Smart Flow Mini", "price": "26,900", "description": "Zgjidhje ideale për hapësira më të vogla dhe dhoma gjumi." }
+      }
+    },
+    "testimonials": {
+      "title": "Çfarë thonë përdoruesit tanë",
+      "subtitle": "Besim i ndërtuar në mijëra shtëpi të kënaqura në të gjithë Maqedoninë.",
+      "items": {
+        "ivanov": { "quote": "Fatura e energjisë na u ul ndjeshëm pasi instaluam Celsius Pro. Puna është jashtëzakonisht e qetë.", "author": "Petar Ivanov", "city": "Shkup" },
+        "stojanova": { "quote": "Investimi më i mirë për shtëpinë tonë të re. Dizajni është modern dhe përshtatet në mënyrë perfekte në dhomën e ndenjes.", "author": "Elena Stojanova", "city": "Manastir" }
+      },
+      "stats": { "installs": "10k+", "installsLabel": "Instalime", "rating": "5.0", "ratingLabel": "Vlerësim" }
+    },
+    "cta": {
+      "title": "Gati për një nivel të ri komoditeti?",
+      "subtitle": "Kontaktoni ekspertët tanë për konsultim falas dhe gjeni pajisjen perfekte për ju.",
+      "primary": "Cakto konsultim",
+      "secondary": "Kontrollo disponueshmërinë"
+    }
+  },
+  "product": {
+    "breadcrumb": { "home": "Kreu", "category": "Kondicionerë inverter" },
+    "badge": "PREMIUM LINE",
+    "reviews": "({{count}} vlerësime)",
+    "title": "Celsius Pro-Quiet 12000 BTU Inverter",
+    "description": "Teknologjia më e avancuar për ftohje dhe ngrohje. Përjetoni qetësi të përsosur dhe efikasitet maksimal të energjisë me modelin tonë premium.",
+    "price": "34.990",
+    "oldPrice": "42.000",
+    "energyClassLabel": "Klasa energjetike",
+    "energyClassValue": "A+++",
+    "guaranteeLabel": "Garancia",
+    "guaranteeValue": "5 Vjet",
+    "orderNow": "Porosit Tani",
+    "contactUs": "Na Kontaktoni",
+    "tech": {
+      "eyebrow": "Teknologjia",
+      "title": "Pse Celsius Pro-Quiet?",
+      "items": {
+        "inverter": { "title": "Teknologjia Inverter", "body": "Kompresori ynë i avancuar inverter rregullon shpejtësinë për të mbajtur temperaturë konstante, duke kursyer deri në 60% energji krahasuar me pajisjet standarde." },
+        "quiet": { "title": "Punë Ultra e Qetë", "body": "Me vetëm 19dB nivel zhurme, Celsius Pro-Quiet është pothuajse i padëgjueshëm, ideal për dhoma gjumi dhe ambiente pune." },
+        "filter": { "title": "Filtër me 7-Shtresa", "body": "Sistem i integruar pastrimi i ajrit eliminon 99% të baktereve, pluhurit dhe alergjenëve, duke ofruar ajër të freskët për shtëpinë tuaj." }
+      }
+    },
+    "specs": {
+      "title": "Specifikimet teknike",
+      "rows": {
+        "cooling": { "label": "Kapaciteti i ftohjes", "value": "12000 BTU / 3.5 kW" },
+        "heating": { "label": "Kapaciteti i ngrohjes", "value": "13000 BTU / 3.8 kW" },
+        "energy": { "label": "Klasa energjetike (Ftohje)", "value": "A+++" },
+        "seer": { "label": "SEER / SCOP", "value": "8.5 / 5.1" },
+        "temp": { "label": "Diapazoni i punës", "value": "−25°C deri +50°C" },
+        "noise": { "label": "Niveli i zhurmës (brendshme)", "value": "19 / 24 / 30 / 38 dB" },
+        "gas": { "label": "Tipi i gazit", "value": "R32 (Ekologjik)" },
+        "wifi": { "label": "Kontrolli Wi-Fi", "value": "I integruar" }
+      },
+      "quote": "Ky kondicioner është jashtëzakonisht i qetë. E përdorim në dhomën e gjumit dhe flemë qetësisht gjithë natën.",
+      "quoteAuthor": "— Marija K., përdoruese e kënaqur"
+    },
+    "similar": {
+      "title": "Modele të ngjashme",
+      "subtitle": "Shihni gjithçka tjetër që ofrojmë.",
+      "viewAll": "Shih të gjitha",
+      "items": {
+        "standard": { "name": "Celsius Standard 12000 BTU", "price": "28.990", "tag": "VLERA MË E MIRË", "feature1": "A++", "feature2": "WIFI" },
+        "master": { "name": "Celsius Master 18000 BTU", "price": "54.990", "tag": "FUQI MAKSIMALE", "feature1": "A+++", "feature2": "HEAVY DUTY" },
+        "compact": { "name": "Celsius Compact 9000 BTU", "price": "24.500", "tag": "", "feature1": "A++", "feature2": "SLIM FIT" }
+      }
+    }
+  },
+  "about": {
+    "eyebrow": "Historia jonë",
+    "title": "Klimatizim inteligjent për jetesë moderne.",
+    "description": "Themeluar në zemrën e progresit teknologjik, Celsius është më shumë se një markë kondicionerësh inverter. Ne jemi pionierë në krijimin e ambienteve që marrin frymë me ju, duke optimizuar energjinë pa kompromis komoditeti. Misioni ynë është të ripërcaktojmë përvojën termostatike përmes inxhinierisë së saktë dhe dizajnit të patëmetë.",
+    "stats": {
+      "experience": "15+",
+      "experienceLabel": "Vite Përvojë",
+      "clients": "50k+",
+      "clientsLabel": "Klientë të Kënaqur"
+    },
+    "imageQuote": "„Saktësi në çdo gradë.\"",
+    "values": {
+      "title": "Vlerat që na udhëheqin",
+      "subtitle": "Ne jo vetëm prodhojmë harduer; ne ndërtojmë besim përmes çdo instalimi.",
+      "items": {
+        "sustainability": { "title": "Qëndrueshmëria", "body": "Teknologjitë tona inverter ulin konsumin e energjisë deri në 40%, duke mbrojtur natyrën dhe buxhetin tuaj." },
+        "precision": { "title": "Inxhinieri Precize", "body": "Çdo komponent testohet në kushte ekstreme për të garantuar temperaturë të qëndrueshme pavarësisht faktorëve të jashtëm." },
+        "support": { "title": "Mbështetje 24/7", "body": "Rrjeti ynë i teknikëve profesionistë është gjithmonë i disponueshëm për mirëmbajtje dhe diagnostikim të shpejtë në të gjithë vendin." }
+      }
+    },
+    "tech": {
+      "eyebrow": "Ekspertizë teknologjike",
+      "title": "Teknologji inverter e gjeneratës së ardhshme",
+      "description": "Qendrat tona kërkimore punojnë në përsosjen e inteligjencës artificiale në klimatizim. Pajisjet Celsius mësojnë nga zakonet tuaja, duke përshtatur automatikisht ciklet e ftohjes dhe ngrohjes për efikasitet maksimal.",
+      "items": {
+        "ai": "Kompresor i Përshtatshëm me AI",
+        "quiet": "Operim ultra i qetë (nën 19dB)",
+        "filter": "Filtrim i ajrit HEPA H13"
+      }
+    },
+    "cta": {
+      "title": "Gati për një klimë më të mirë?",
+      "subtitle": "Kontaktoni ekspertët tanë sot dhe merrni një konsultim falas për hapësirën tuaj.",
+      "primary": "Kërkoni Ofertë",
+      "secondary": "Shih Katalogun"
+    }
+  },
+  "contact": {
+    "eyebrow": "Na kontaktoni",
+    "titleLine1": "Komoditeti juaj është prioriteti",
+    "titleEmphasis": "ynë",
+    "titleLine2": ".",
+    "description": "Keni pyetje për sistemet tona inverter? Ekipi ynë i ekspertëve është këtu për t'ju ndihmuar të zgjidhni zgjidhjen më të mirë për shtëpinë ose hapësirën tuaj të biznesit.",
+    "support": { "label": "24/7", "sublabel": "Mbështetje teknike" },
+    "info": {
+      "title": "Informacione",
+      "phoneLabel": "Telefoni",
+      "phoneValue": "+389 2 3100 200",
+      "emailLabel": "E-mail",
+      "emailValue": "info@celsius.mk",
+      "addressLabel": "Adresa",
+      "addressValue": "Bul. Partizanski Odredi 42, 1000 Shkup, Maqedoni"
+    },
+    "hours": {
+      "title": "Orari i punës",
+      "weekdays": "E hënë − E premte",
+      "weekdaysValue": "08:00 − 20:00",
+      "saturday": "E shtunë",
+      "saturdayValue": "09:00 − 15:00",
+      "sunday": "E diel",
+      "sundayValue": "Mbyllur"
+    },
+    "form": {
+      "title": "Na shkruani një mesazh",
+      "name": "Emri dhe mbiemri",
+      "namePlaceholder": "Jovan Jovanovski",
+      "email": "E-mail",
+      "emailPlaceholder": "jovan@example.com",
+      "phone": "Numri i telefonit",
+      "phonePlaceholder": "+389 7X XXX XXX",
+      "message": "Mesazhi",
+      "messagePlaceholder": "Si mund t'ju ndihmojmë?",
+      "submit": "Dërgo mesazhin"
+    },
+    "map": { "title": "Selia kryesore", "subtitle": "Vizitoni showroom-in tonë" }
+  },
+  "admin": {
+    "brand": { "title": "Celsius Admin", "subtitle": "Inverter Management" },
+    "search": "Kërko…",
+    "user": { "name": "Albanian Admin", "role": "Administrator" },
+    "nav": { "analytics": "Analytics", "products": "Products", "orders": "Orders", "settings": "Settings" },
+    "stats": {
+      "visitors": "Vizitorë Ditorë", "visitorsValue": "1,284", "visitorsTrend": "+12%",
+      "requests": "Kërkesa të Reja", "requestsValue": "42", "requestsTrend": "+5%",
+      "views": "Shikime të Produkteve", "viewsValue": "8,902", "viewsTrend": "−2%"
+    },
+    "products": {
+      "title": "Menaxhimi i Produkteve",
+      "subtitle": "Shih dhe edito sistemet inverter",
+      "cols": { "product": "Produkti", "status": "Statusi", "price": "Çmimi", "actions": "Veprime" },
+      "rows": {
+        "proX1": { "name": "Celsius Pro X1", "spec": "12,000 BTU", "price": "34,990 den." },
+        "arctic": { "name": "Celsius Arctic Elite", "spec": "18,000 BTU", "price": "48,500 den." }
+      },
+      "status": { "inStock": "Në stok", "lowStock": "Stok i ulët" }
+    },
+    "requests": {
+      "title": "Kërkesat e Fundit",
+      "viewAll": "Shih të gjitha",
+      "items": {
+        "trajkovski": { "name": "Igor Trajkovski", "subject": "Interes për Celsius …", "time": "2 orë më parë" },
+        "angelova": { "name": "Elena Angelova", "subject": "Kërkesë për montim", "time": "5 orë më parë" },
+        "petrov": { "name": "Marko Petrov", "subject": "Pyetje e përgjithshme…", "time": "8 orë më parë" }
+      }
+    },
+    "upload": {
+      "title": "Shto produkt të ri në katalog",
+      "subtitle": "Plotësoni specifikimet, çmimin dhe ngarkoni fotografi për sistemin e ri Celsius.",
+      "button": "Hap Formularin"
+    },
+    "system": {
+      "title": "Statusi i Sistemit",
+      "value": "99.2%",
+      "status": "Optimal",
+      "description": "Të gjithë serverët dhe rrjetet inverter punojnë me kapacitet të plotë pa gabime të regjistruara."
+    },
+    "addProduct": "Shto Produkt",
+    "pages": {
+      "products": { "title": "Produktet", "subtitle": "Menaxhoni katalogun e sistemeve inverter." },
+      "orders": { "title": "Porositë", "subtitle": "Shihni dhe përpunoni porositë e klientëve." },
+      "settings": { "title": "Cilësimet", "subtitle": "Konfiguroni hapësirën tuaj admin." }
+    },
+    "comingSoon": { "title": "Së shpejti", "subtitle": "Kjo veçori është në zhvillim." },
+    "form": {
+      "newTitle": "Produkt i ri",
+      "editTitle": "Edito produktin",
+      "newSubtitle": "Plotësoni detajet dhe ngarkoni një imazh për sistemin e ri Celsius.",
+      "editSubtitle": "Përditësoni detajet për këtë produkt.",
+      "section": { "basic": "Informacioni bazë", "media": "Imazhi", "classification": "Klasifikimi", "specs": "Specifikime teknike (opsionale)" },
+      "fields": {
+        "name": "Emri i produktit",
+        "namePlaceholder": "p.sh. Celsius Pro-Quiet 12000",
+        "slug": "URL slug",
+        "slugHint": "Gjenerohet automatikisht nëse lihet bosh.",
+        "description": "Përshkrim i shkurtër",
+        "descriptionPlaceholder": "Theksoni më të rëndësishmet në 1-2 fjali.",
+        "priceMkd": "Çmimi (DEN)",
+        "oldPriceMkd": "Çmimi i vjetër (opsional)",
+        "capacityBtu": "Kapaciteti (BTU)",
+        "brand": "Marka",
+        "energyClass": "Klasa energjetike",
+        "badge": "Etiketa",
+        "badgeNone": "Pa etiketë",
+        "guaranteeYears": "Garancia (vjet)",
+        "noiseDb": "Zhurma (dB)",
+        "image": "Imazhi i produktit",
+        "imageHint": "PNG, JPG ose WebP, maksimumi 5MB.",
+        "imageReplace": "Zëvendëso imazhin",
+        "specsCooling": "Kapaciteti i ftohjes",
+        "specsHeating": "Kapaciteti i ngrohjes",
+        "specsSeer": "SEER / SCOP",
+        "specsTemp": "Diapazoni i punës",
+        "specsNoise": "Niveli i zhurmës",
+        "specsGas": "Tipi i gazit",
+        "specsWifi": "Wi-Fi"
+      },
+      "submitCreate": "Ruaj produktin",
+      "submitUpdate": "Ruaj ndryshimet",
+      "saving": "Duke ruajtur…",
+      "cancel": "Anulo",
+      "delete": "Fshi",
+      "deleting": "Duke fshirë…",
+      "deleteConfirm": "Jeni i sigurt që doni ta fshini këtë produkt?",
+      "back": "Mbrapa te admin",
+      "errors": {
+        "required": "Kjo fushë është e detyrueshme",
+        "image": "Ngarko një imazh",
+        "generic": "Ruajtja dështoi. Provoni përsëri."
+      }
+    },
+    "products2": {
+      "empty": "Ende nuk ka produkte. Shtoni produktin tuaj të parë.",
+      "edit": "Edito",
+      "delete": "Fshi"
+    },
+    "footer": { "copyright": "© 2024 Celsius Inverter Technologies. Të gjitha të drejtat e rezervuara.", "support": "Mbështetje", "privacy": "Privatësia", "terms": "Kushtet" }
+  },
+  "footer": {
+    "tagline": "Pionierë në teknologjinë inverter. Të përkushtuar në krijimin e shtëpive efikase në energji dhe komode.",
+    "products": {
+      "title": "Produktet",
+      "items": { "residential": "Modele rezidenciale", "commercial": "Multi-Split komerciale", "smart": "Smart Home Kits", "accessories": "Aksesorë" }
+    },
+    "company": {
+      "title": "Kompania",
+      "items": { "about": "Rreth Nesh", "sustainability": "Qëndrueshmëria", "support": "Mbështetje", "warranty": "Garancia" }
+    },
+    "contact": {
+      "title": "Kontakt",
+      "phone": "+389 2 3000 000",
+      "email": "contact@celsius.mk",
+      "address": "Bul. Partizanski Odredi 1, Shkup"
+    },
+    "legal": { "copyright": "© 2024 Celsius Inverter Technologies. Të gjitha të drejtat e rezervuara.", "privacy": "Privatësia", "terms": "Kushtet e përdorimit" }
+  }
+}
