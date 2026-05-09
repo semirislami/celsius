@@ -17,17 +17,41 @@ const baseOptions = {
 /**
  * Server-side read client. Uses the anon key — assumes RLS allows public reads
  * on whatever table is being queried. Safe to use in server components.
+ *
+ * Throws if env is missing — use this when the caller wants to fail loudly
+ * (e.g. write-side helpers that must not silently no-op).
  */
 export function getReadClient(): SupabaseClient {
+  const sb = tryGetReadClient();
+  if (!sb) {
+    throw new Error(
+      "Supabase env missing. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+    );
+  }
+  return sb;
+}
+
+/**
+ * Same as getReadClient but returns null (with a console.warn) when env is
+ * missing, so server components can render an empty state instead of throwing
+ * a 500. Use this from public read paths (homepage, shop, product detail).
+ */
+export function tryGetReadClient(): SupabaseClient | null {
   if (readSingleton) return readSingleton;
   if (!URL || !ANON) {
-    throw new Error(
-      "Supabase env missing. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local."
-    );
+    if (!warnedRead) {
+      console.warn(
+        "[supabase] NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY missing — read paths will return empty results."
+      );
+      warnedRead = true;
+    }
+    return null;
   }
   readSingleton = createClient(URL, ANON, baseOptions);
   return readSingleton;
 }
+
+let warnedRead = false;
 
 /**
  * Server-side admin client. Uses the service role key (bypasses RLS).

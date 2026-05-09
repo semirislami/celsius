@@ -1,40 +1,82 @@
 import "server-only";
-import { getAdminClient, getReadClient } from "@/lib/supabase/server";
+import { getAdminClient, getReadClient, tryGetReadClient } from "@/lib/supabase/server";
 import { productToRow, rowToProduct, type ProductRow } from "@/lib/supabase/mappers";
 import type { NewProductInput, Product, ProductPatch } from "./types";
 
 const TABLE = "products";
 
+/**
+ * Public-page reads degrade gracefully: if Supabase isn't configured, or the
+ * table doesn't exist yet, or RLS denies access, we log and return an empty
+ * result. This keeps the homepage/shop/detail pages from 500'ing in
+ * production when env or schema isn't fully set up.
+ */
 export async function listProducts(): Promise<Product[]> {
-  const sb = getReadClient();
-  const { data, error } = await sb
-    .from(TABLE)
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw new Error(`listProducts: ${error.message}`);
-  return ((data ?? []) as ProductRow[]).map(rowToProduct);
+  const sb = tryGetReadClient();
+  if (!sb) return [];
+  try {
+    const { data, error } = await sb
+      .from(TABLE)
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error("[products] listProducts:", error.message);
+      return [];
+    }
+    return ((data ?? []) as ProductRow[]).map(rowToProduct);
+  } catch (err) {
+    console.error(
+      "[products] listProducts failed:",
+      err instanceof Error ? err.message : err
+    );
+    return [];
+  }
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const sb = getReadClient();
-  const { data, error } = await sb
-    .from(TABLE)
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
-  if (error) throw new Error(`getProductBySlug: ${error.message}`);
-  return data ? rowToProduct(data as ProductRow) : null;
+  const sb = tryGetReadClient();
+  if (!sb) return null;
+  try {
+    const { data, error } = await sb
+      .from(TABLE)
+      .select("*")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (error) {
+      console.error("[products] getProductBySlug:", error.message);
+      return null;
+    }
+    return data ? rowToProduct(data as ProductRow) : null;
+  } catch (err) {
+    console.error(
+      "[products] getProductBySlug failed:",
+      err instanceof Error ? err.message : err
+    );
+    return null;
+  }
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  const sb = getReadClient();
-  const { data, error } = await sb
-    .from(TABLE)
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
-  if (error) throw new Error(`getProductById: ${error.message}`);
-  return data ? rowToProduct(data as ProductRow) : null;
+  const sb = tryGetReadClient();
+  if (!sb) return null;
+  try {
+    const { data, error } = await sb
+      .from(TABLE)
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (error) {
+      console.error("[products] getProductById:", error.message);
+      return null;
+    }
+    return data ? rowToProduct(data as ProductRow) : null;
+  } catch (err) {
+    console.error(
+      "[products] getProductById failed:",
+      err instanceof Error ? err.message : err
+    );
+    return null;
+  }
 }
 
 export async function createProduct(input: NewProductInput): Promise<Product> {
