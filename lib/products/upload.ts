@@ -82,25 +82,17 @@ export async function saveUploadedImage(file: File): Promise<UploadResult> {
       upsert: false
     });
   if (uploadError) {
-    console.error(
-      "[upload] storage.upload failed",
-      JSON.stringify(
-        {
-          bucket: STORAGE_BUCKET,
-          filename,
-          type: file.type,
-          size: file.size,
-          message: uploadError.message,
-          name: uploadError.name,
-          // @ts-expect-error — StorageError sometimes carries extra fields
-          status: uploadError.status,
-          // @ts-expect-error — same
-          statusCode: uploadError.statusCode
-        },
-        null,
-        2
-      )
-    );
+    const meta = uploadError as unknown as { status?: number; statusCode?: number };
+    console.error("[upload] storage.upload failed", {
+      bucket: STORAGE_BUCKET,
+      filename,
+      type: file.type,
+      size: file.size,
+      message: uploadError.message,
+      name: uploadError.name,
+      status: meta.status,
+      statusCode: meta.statusCode
+    });
     return { error: `upload failed: ${uploadError.message}` };
   }
 
