@@ -1,20 +1,57 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-// Trim trailing slashes / whitespace — Vercel env paste can introduce them
-// and the storage client builds malformed URLs ("…supabase.co//storage/...")
-// which Supabase rejects with "Invalid path specified in request URL".
-function clean(value: string | undefined): string | undefined {
+// Trim whitespace from key-style env values.
+function cleanKey(value: string | undefined): string | undefined {
   if (!value) return undefined;
-  const trimmed = value.trim().replace(/\/+$/, "");
+  const trimmed = value.trim();
   return trimmed || undefined;
 }
 
-const URL = clean(process.env.NEXT_PUBLIC_SUPABASE_URL);
-const ANON = clean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-const SERVICE = clean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+/**
+ * Robustly normalize the Supabase project URL.
+ *
+ * Accepts any of:
+ *   - "https://xyz.supabase.co"
+ *   - "https://xyz.supabase.co/"
+ *   - "xyz.supabase.co" (missing scheme)
+ *   - "https://xyz.supabase.co/api" (extra path, e.g. someone copied a deeper page)
+ *
+ * Always returns the origin only ("https://xyz.supabase.co"). Returns
+ * undefined if the value isn't a parsable URL.
+ *
+ * Without this, malformed URLs leak into the storage SDK as e.g.
+ *   "…supabase.co//storage/v1/bucket"
+ * which Supabase rejects with "Invalid path specified in request URL".
+ */
+function cleanUrl(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  let v = value.trim();
+  if (!v) return undefined;
+  if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
+  try {
+    return new globalThis.URL(v).origin;
+  } catch {
+    return undefined;
+  }
+}
 
-export const STORAGE_BUCKET = (clean(process.env.SUPABASE_STORAGE_BUCKET) ?? "product-images");
+const URL = cleanUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+const ANON = cleanKey(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+const SERVICE = cleanKey(process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+export const STORAGE_BUCKET = (cleanKey(process.env.SUPABASE_STORAGE_BUCKET) ?? "product-images");
+
+/** Exposed for /api/debug to confirm what the server actually parsed. */
+export function getDebugConfig() {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  return {
+    url: { resolved: URL ?? null, rawLength: raw.length, hadTrailingSlash: raw.endsWith("/"), hadScheme: /^https?:\/\//i.test(raw) },
+    anon: { present: !!ANON, length: ANON?.length ?? 0 },
+    service: { present: !!SERVICE, length: SERVICE?.length ?? 0 },
+    bucket: STORAGE_BUCKET
+  };
+}
 
 let readSingleton: SupabaseClient | null = null;
 let adminSingleton: SupabaseClient | null = null;
