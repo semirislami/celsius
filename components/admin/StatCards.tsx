@@ -1,6 +1,16 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
+import {
+  BadgePercent,
+  Boxes,
+  Coins,
+  Layers,
+  Percent,
+  Plus,
+  Tag,
+  TrendingUp,
+  type LucideIcon
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
@@ -13,12 +23,30 @@ const TONE_CLASSES: Record<Tone, { bg: string; color: string }> = {
   neutral: { bg: "bg-canvas-muted", color: "text-ink-soft" }
 };
 
+/**
+ * Icons live entirely inside this client component. The server page only
+ * passes a *string* key — Next's RSC serializer can't ship React component
+ * references across the server/client boundary.
+ */
+const ICONS: Record<string, LucideIcon> = {
+  boxes: Boxes,
+  coins: Coins,
+  tag: Tag,
+  badgePercent: BadgePercent,
+  plus: Plus,
+  layers: Layers,
+  percent: Percent,
+  trendingUp: TrendingUp
+};
+
+export type IconKey = keyof typeof ICONS;
+
 export type StatCardItem = {
   key: string;
   labelKey: string;
   sublabelKey?: string;
   value: string | number;
-  Icon: LucideIcon;
+  iconKey: IconKey;
   tone: Tone;
 };
 
@@ -27,13 +55,12 @@ type Props = { stats: StatCardItem[] };
 export function StatCards({ stats }: Props) {
   const { t } = useTranslation();
   const colsClass =
-    stats.length >= 4
-      ? "md:grid-cols-2 xl:grid-cols-4"
-      : "md:grid-cols-3";
+    stats.length >= 4 ? "md:grid-cols-2 xl:grid-cols-4" : "md:grid-cols-3";
 
   return (
     <div className={cn("grid gap-4", colsClass)}>
-      {stats.map(({ key, labelKey, sublabelKey, value, Icon, tone }) => {
+      {stats.map(({ key, labelKey, sublabelKey, value, iconKey, tone }) => {
+        const Icon = ICONS[iconKey] ?? Boxes;
         const tc = TONE_CLASSES[tone];
         return (
           <article

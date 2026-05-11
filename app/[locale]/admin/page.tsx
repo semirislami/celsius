@@ -1,14 +1,4 @@
 import { notFound } from "next/navigation";
-import {
-  BadgePercent,
-  Boxes,
-  Coins,
-  Layers,
-  Percent,
-  Plus,
-  Tag,
-  TrendingUp
-} from "lucide-react";
 import { isLocale, type Locale } from "@/lib/i18n/settings";
 import { listProducts } from "@/lib/products/store";
 import { computeAnalytics } from "@/lib/products/analytics";
@@ -32,34 +22,35 @@ export default async function AdminDashboard({ params }: { params: { locale: str
   }
 
   const a = computeAnalytics(products);
+  const fmtCount = (n: number) => n.toLocaleString("mk-MK").replace(/,/g, ".");
 
   const primary: StatCardItem[] = [
     {
       key: "total",
       labelKey: "admin.analytics.totalProducts",
-      value: a.totalProducts.toLocaleString("mk-MK").replace(/,/g, "."),
-      Icon: Boxes,
+      value: fmtCount(a.totalProducts),
+      iconKey: "boxes",
       tone: "celsius"
     },
     {
       key: "value",
       labelKey: "admin.analytics.totalValue",
       value: `${formatMkd(a.totalValueMkd)} ден.`,
-      Icon: Coins,
+      iconKey: "coins",
       tone: "emerald"
     },
     {
       key: "avgPrice",
       labelKey: "admin.analytics.avgPrice",
       value: `${formatMkd(Math.round(a.avgPriceMkd))} ден.`,
-      Icon: Tag,
+      iconKey: "tag",
       tone: "neutral"
     },
     {
       key: "onSale",
       labelKey: "admin.analytics.onSale",
-      value: a.productsOnSale.toLocaleString("mk-MK").replace(/,/g, "."),
-      Icon: BadgePercent,
+      value: fmtCount(a.productsOnSale),
+      iconKey: "badgePercent",
       tone: "heating"
     }
   ];
@@ -69,29 +60,29 @@ export default async function AdminDashboard({ params }: { params: { locale: str
       key: "recent",
       labelKey: "admin.analytics.recentProducts",
       sublabelKey: "admin.analytics.recentWindow",
-      value: a.recentProducts.toLocaleString("mk-MK").replace(/,/g, "."),
-      Icon: Plus,
+      value: fmtCount(a.recentProducts),
+      iconKey: "plus",
       tone: "celsius"
     },
     {
       key: "brands",
       labelKey: "admin.analytics.brands",
-      value: a.brandCount.toLocaleString("mk-MK").replace(/,/g, "."),
-      Icon: Layers,
+      value: fmtCount(a.brandCount),
+      iconKey: "layers",
       tone: "neutral"
     },
     {
       key: "avgDiscount",
       labelKey: "admin.analytics.avgDiscount",
       value: `${a.avgDiscountPct.toFixed(1)}%`,
-      Icon: Percent,
+      iconKey: "percent",
       tone: "heating"
     },
     {
       key: "savings",
       labelKey: "admin.analytics.totalSavings",
       value: `${formatMkd(a.totalSavingsMkd)} ден.`,
-      Icon: TrendingUp,
+      iconKey: "trendingUp",
       tone: "emerald"
     }
   ];
