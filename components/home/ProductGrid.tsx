@@ -84,11 +84,18 @@ export function ProductGrid({ locale, products }: Props) {
                         {p.name}
                       </Link>
                     </h3>
-                    <div className="text-base font-semibold text-celsius-500">
-                      {formatMkd(p.priceMkd)}{" "}
-                      <span className="text-xs font-medium text-ink-muted">
-                        {t("common.currency")}
-                      </span>
+                    <div className="text-right">
+                      {p.oldPriceMkd && p.oldPriceMkd > p.priceMkd && (
+                        <div className="text-xs font-medium text-ink-muted line-through">
+                          {formatMkd(p.oldPriceMkd)} {t("common.currency")}
+                        </div>
+                      )}
+                      <div className="text-base font-semibold text-celsius-500">
+                        {formatMkd(p.priceMkd)}{" "}
+                        <span className="text-xs font-medium text-ink-muted">
+                          {t("common.currency")}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-muted">

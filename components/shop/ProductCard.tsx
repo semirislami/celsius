@@ -56,6 +56,11 @@ export function ProductCard({ product, locale }: Props) {
             </Link>
           </h3>
           <div className="shrink-0 text-right">
+            {product.oldPriceMkd && product.oldPriceMkd > product.priceMkd && (
+              <div className="text-xs font-medium text-ink-muted line-through">
+                {formatMkd(product.oldPriceMkd)} {t("common.currency")}
+              </div>
+            )}
             <div className="text-xl font-semibold leading-none text-celsius-500">
               {formatMkd(product.priceMkd)}
             </div>
