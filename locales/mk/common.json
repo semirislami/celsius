@@ -20,7 +20,8 @@
     "currency": "ден.",
     "search": "Пребарај…",
     "loading": "Се вчитува…",
-    "tryAgain": "Обиди се повторно"
+    "tryAgain": "Обиди се повторно",
+    "orderViaWhatsapp": "Нарачај преку WhatsApp"
   },
   "shop": {
     "breadcrumbHome": "Почетна",
@@ -38,9 +39,10 @@
       "capacity": "Капацитет (BTU)",
       "energyClass": "Енергетска Класа",
       "brands": {
-        "celsius-prime": "Celsius Prime",
-        "inverter-pro": "Inverter Pro",
-        "eco-thermal": "EcoThermal"
+        "vivax": "Vivax",
+        "fuego": "Fuego",
+        "beko": "Beko",
+        "samsung": "Samsung"
       },
       "energy": {
         "A+++": "А+++ (Premium Efficiency)",
@@ -233,11 +235,11 @@
     "info": {
       "title": "Информации",
       "phoneLabel": "Телефон",
-      "phoneValue": "+389 2 3100 200",
+      "phoneValue": "+389 72 244 291",
       "emailLabel": "Е-пошта",
       "emailValue": "info@celsius.mk",
       "addressLabel": "Адреса",
-      "addressValue": "Бул. Партизански Одреди 42, 1000 Скопје, Македонија"
+      "addressValue": "Ул. Сарај, Скопје, Македонија"
     },
     "hours": {
       "title": "Работно време",
@@ -399,9 +401,9 @@
     },
     "contact": {
       "title": "Контакт",
-      "phone": "+389 2 3000 000",
+      "phone": "+389 72 244 291",
       "email": "contact@celsius.mk",
-      "address": "Бул. Партизански Одреди 1, Скопје"
+      "address": "Ул. Сарај, Скопје"
     },
     "legal": { "copyright": "© 2024 Celsius Inverter Technologies. Сите права се задржани.", "privacy": "Приватност", "terms": "Услови за користење" }
   }

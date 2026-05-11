@@ -7,7 +7,7 @@ import { useRef, useState } from "react";
 import { ArrowLeft, ImagePlus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Locale } from "@/lib/i18n/settings";
-import { CAPACITIES, type Product } from "@/lib/products/types";
+import { BRANDS, CAPACITIES, type Product } from "@/lib/products/types";
 import { uploadProductImage } from "@/lib/products/uploadClient";
 
 type Mode = { kind: "create" } | { kind: "edit"; product: Product };
@@ -17,9 +17,9 @@ type Props = {
   mode: Mode;
 };
 
-// Defaults for fields no longer surfaced in the UI but still required by
-// the data model / DB schema.
-const DEFAULT_BRAND = "celsius-prime";
+// energyClass is no longer exposed in the form — coolingEnergyClass /
+// heatingEnergyClass in the specs panel are the user-facing fields. We still
+// store a top-level value because the DB column is NOT NULL.
 const DEFAULT_ENERGY_CLASS = "A+++";
 
 export function ProductForm({ locale, mode }: Props) {
@@ -41,6 +41,11 @@ export function ProductForm({ locale, mode }: Props) {
   const [capacityBtu, setCapacityBtu] = useState<string>(
     initial ? String(initial.capacityBtu) : "12000"
   );
+  const initialBrand =
+    initial?.brand && (BRANDS as readonly string[]).includes(initial.brand)
+      ? initial.brand
+      : "vivax";
+  const [brand, setBrand] = useState<string>(initialBrand);
 
   // ---- specs (screenshot fields) ----
   const s0 = initial?.specs ?? {};
@@ -99,7 +104,7 @@ export function ProductForm({ locale, mode }: Props) {
         priceMkd: Number(priceMkd),
         oldPriceMkd: oldPriceMkd ? Number(oldPriceMkd) : undefined,
         capacityBtu: Number(capacityBtu),
-        brand: DEFAULT_BRAND,
+        brand,
         energyClass: DEFAULT_ENERGY_CLASS,
         badge: null,
         specs: {
@@ -230,7 +235,16 @@ export function ProductForm({ locale, mode }: Props) {
             <input id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} placeholder={t("admin.form.fields.namePlaceholder")} className={inputCls} />
           </Field>
           <Field id="slug" label={t("admin.form.fields.slug")} hint={t("admin.form.fields.slugHint")}>
-            <input id="slug" name="slug" value={slug} onChange={(e) => setSlug(e.target.value)} className={inputCls} placeholder="celsius-pro-quiet-12000" />
+            <input id="slug" name="slug" value={slug} onChange={(e) => setSlug(e.target.value)} className={inputCls} placeholder="vivax-pro-quiet-12000" />
+          </Field>
+          <Field id="brand" label={t("admin.form.fields.brand")} required>
+            <select id="brand" name="brand" required value={brand} onChange={(e) => setBrand(e.target.value)} className={inputCls}>
+              {BRANDS.map((b) => (
+                <option key={b} value={b}>
+                  {t(`shop.filters.brands.${b}`)}
+                </option>
+              ))}
+            </select>
           </Field>
           <Field id="description" label={t("admin.form.fields.description")} required>
             <textarea id="description" name="description" required rows={4} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("admin.form.fields.descriptionPlaceholder")} className={inputCls} />

@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, ShoppingBag, Snowflake, Zap } from "lucide-react";
+import { ArrowRight, Snowflake, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { formatMkd } from "@/lib/products/format";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/lib/i18n/settings";
 import type { Product } from "@/lib/products/types";
+import { WhatsAppButton } from "@/components/common/WhatsAppButton";
 
 type Props = { locale: Locale; products: Product[] };
 
@@ -103,13 +104,9 @@ export function ProductGrid({ locale, products }: Props) {
                       {p.energyClass}
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-canvas-muted px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-celsius-50 hover:text-celsius-600"
-                  >
-                    <ShoppingBag size={15} />
-                    {t("home.products.addToCart")}
-                  </button>
+                  <div className="mt-5">
+                    <WhatsAppButton product={p} locale={locale} variant="card" />
+                  </div>
                 </div>
               </motion.article>
             ))}

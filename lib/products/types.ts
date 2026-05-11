@@ -1,5 +1,17 @@
-export const BRANDS = ["celsius-prime", "inverter-pro", "eco-thermal"] as const;
+export const BRANDS = ["vivax", "fuego", "beko", "samsung"] as const;
 export type Brand = (typeof BRANDS)[number];
+
+/** Display labels for brands. Proper nouns — identical across locales. */
+export const BRAND_LABELS: Record<Brand, string> = {
+  vivax: "Vivax",
+  fuego: "Fuego",
+  beko: "Beko",
+  samsung: "Samsung"
+};
+
+export function brandLabel(brand: string): string {
+  return (BRAND_LABELS as Record<string, string>)[brand] ?? brand;
+}
 
 export const ENERGY_CLASSES = ["A+++", "A++", "A+"] as const;
 export type EnergyClass = (typeof ENERGY_CLASSES)[number];

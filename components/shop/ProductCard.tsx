@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, Snowflake, Zap } from "lucide-react";
+import { Snowflake, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { formatMkd } from "@/lib/products/format";
 import type { Locale } from "@/lib/i18n/settings";
 import type { Product } from "@/lib/products/types";
+import { WhatsAppButton } from "@/components/common/WhatsAppButton";
 
 type Props = {
   product: Product;
@@ -78,13 +79,7 @@ export function ProductCard({ product, locale }: Props) {
         </div>
 
         <div className="mt-5 flex flex-col gap-2.5">
-          <button
-            type="button"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-celsius-500 px-5 py-3 text-sm font-semibold text-white shadow-card transition hover:bg-celsius-600"
-          >
-            {t("shop.addToCart")}
-            <ShoppingCart size={15} />
-          </button>
+          <WhatsAppButton product={product} locale={locale} variant="card" />
           <Link
             href={detailHref}
             className="text-center text-sm font-semibold text-celsius-500 hover:text-celsius-600"

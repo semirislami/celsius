@@ -1,13 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { Snowflake, ShieldCheck, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatMkd } from "@/lib/products/format";
 import type { Product } from "@/lib/products/types";
+import type { Locale } from "@/lib/i18n/settings";
+import { WhatsAppButton } from "@/components/common/WhatsAppButton";
 
-type Props = { product: Product };
+type Props = { product: Product; locale: Locale };
 
-export function ProductInfo({ product }: Props) {
+export function ProductInfo({ product, locale }: Props) {
   const { t } = useTranslation();
   const reviewCount = product.reviewCount ?? 0;
   const guaranteeYears = product.guaranteeYears ?? 5;
@@ -63,12 +66,10 @@ export function ProductInfo({ product }: Props) {
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <button type="button" className="btn-primary">
-          {t("product.orderNow")}
-        </button>
-        <button type="button" className="btn-secondary">
+        <WhatsAppButton product={product} locale={locale} variant="primary" />
+        <Link href={`/${locale}/contact`} className="btn-secondary">
           {t("product.contactUs")}
-        </button>
+        </Link>
       </div>
     </div>
   );

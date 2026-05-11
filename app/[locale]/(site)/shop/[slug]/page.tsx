@@ -33,7 +33,7 @@ export default async function ProductPage({
         </div>
         <div className="container grid gap-10 py-8 lg:grid-cols-2 lg:gap-14 lg:py-12">
           <Gallery imageUrl={product.imageUrl} alt={product.name} />
-          <ProductInfo product={product} />
+          <ProductInfo product={product} locale={locale} />
         </div>
       </section>
       <TechFeatures />
