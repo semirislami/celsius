@@ -37,13 +37,15 @@ export async function GET() {
   let database: unknown;
   try {
     const sb = getAdminClient();
-    const { count, error } = await sb
+    const { data, count, error } = await sb
       .from("products")
-      .select("*", { count: "exact", head: true });
+      .select("id, slug, name, brand, created_at", { count: "exact" })
+      .order("created_at", { ascending: false });
     database = {
       reached: true,
       tableExists: !error,
       count,
+      rows: data ?? [],
       error: error ? { message: error.message, code: error.code } : null
     };
   } catch (err) {
