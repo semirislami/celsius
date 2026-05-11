@@ -68,9 +68,11 @@ export function ProductCard({ product, locale }: Props) {
           </div>
         </div>
 
-        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-muted">
-          {product.description}
-        </p>
+        {product.description && (
+          <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-muted">
+            {product.description}
+          </p>
+        )}
 
         <div className="mt-4 flex items-center gap-4 text-xs text-ink-muted">
           <span className="inline-flex items-center gap-1.5">

@@ -104,7 +104,7 @@ function parseProductInput(
   const imageUrl = str(b.imageUrl);
 
   if (!name) return { ok: false, error: "name is required" };
-  if (!description) return { ok: false, error: "description is required" };
+  // description is optional now — DB column is NOT NULL so an empty string is fine.
   if (!Number.isFinite(priceMkd) || priceMkd <= 0)
     return { ok: false, error: "priceMkd is invalid" };
   if (!Number.isFinite(capacityBtu) || capacityBtu <= 0)

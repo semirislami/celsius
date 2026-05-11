@@ -31,7 +31,9 @@ export function ProductForm({ locale, mode }: Props) {
   // ---- core fields ----
   const [name, setName] = useState(initial?.name ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
-  const [description, setDescription] = useState(initial?.description ?? "");
+  // description is no longer surfaced in the form — kept as a passthrough so
+  // existing rows preserve their text on update. New products send empty "".
+  const description = initial?.description ?? "";
   const [priceMkd, setPriceMkd] = useState<string>(
     initial ? String(initial.priceMkd) : ""
   );
@@ -245,9 +247,6 @@ export function ProductForm({ locale, mode }: Props) {
                 </option>
               ))}
             </select>
-          </Field>
-          <Field id="description" label={t("admin.form.fields.description")} required>
-            <textarea id="description" name="description" required rows={4} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("admin.form.fields.descriptionPlaceholder")} className={inputCls} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field id="priceMkd" label={t("admin.form.fields.priceMkd")} required>

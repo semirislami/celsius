@@ -98,9 +98,11 @@ export function ProductGrid({ locale, products }: Props) {
                       </div>
                     </div>
                   </div>
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-muted">
-                    {p.description}
-                  </p>
+                  {p.description && (
+                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-muted">
+                      {p.description}
+                    </p>
+                  )}
                   <div className="mt-4 flex items-center gap-4 text-xs text-ink-muted">
                     <span className="inline-flex items-center gap-1.5">
                       <Zap size={13} className="text-heating-500" />

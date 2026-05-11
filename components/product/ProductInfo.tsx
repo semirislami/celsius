@@ -36,7 +36,9 @@ export function ProductInfo({ product, locale }: Props) {
       <h1 className="mt-4 font-display text-3xl md:text-4xl lg:text-[42px] font-semibold leading-[1.1] tracking-[-0.02em] text-ink">
         {product.name}
       </h1>
-      <p className="mt-4 text-ink-muted">{product.description}</p>
+      {product.description && (
+        <p className="mt-4 text-ink-muted">{product.description}</p>
+      )}
 
       <div className="mt-6 flex items-baseline gap-3">
         <span className="text-3xl font-semibold text-celsius-500">
