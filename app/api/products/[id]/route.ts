@@ -135,18 +135,30 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+  console.log("[DELETE /api/products/[id]] received id:", JSON.stringify(params.id));
+
   const existing = await getProductById(params.id);
-  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!existing) {
+    return NextResponse.json(
+      { error: `Product not found for id="${params.id}"` },
+      { status: 404 }
+    );
+  }
   await deleteUploadedImage(existing.imageUrl);
   const ok = await deleteProduct(params.id);
-  if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!ok) {
+    return NextResponse.json(
+      { error: `Delete reported no rows affected for id="${params.id}"` },
+      { status: 404 }
+    );
+  }
 
   // Invalidate every page that lists products so the next navigation picks up
   // the change immediately on Vercel (no stale RSC payload).
   revalidatePath("/", "layout");
 
   return NextResponse.json(
-    { ok: true },
+    { ok: true, id: params.id },
     { headers: { "Cache-Control": "no-store" } }
   );
 }

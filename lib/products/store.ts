@@ -56,23 +56,41 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   }
 }
 
+/**
+ * Single-product lookup by id. This is only ever called from admin contexts
+ * (edit page, PUT, DELETE), so we use the service-role client to bypass RLS
+ * and any sample-row weirdness — same client that the write goes through, so
+ * a successful lookup guarantees the delete/update will also see the row.
+ */
 export async function getProductById(id: string): Promise<Product | null> {
-  const sb = tryGetReadClient();
-  if (!sb) return null;
+  if (!id) {
+    console.warn("[products] getProductById called with empty id");
+    return null;
+  }
   try {
+    const sb = getAdminClient();
     const { data, error } = await sb
       .from(TABLE)
       .select("*")
       .eq("id", id)
       .maybeSingle();
     if (error) {
-      console.error("[products] getProductById:", error.message);
+      console.error("[products] getProductById error:", {
+        id,
+        message: error.message,
+        code: (error as { code?: string }).code,
+        details: (error as { details?: string }).details
+      });
       return null;
     }
-    return data ? rowToProduct(data as ProductRow) : null;
+    if (!data) {
+      console.warn("[products] getProductById no row for id:", id);
+      return null;
+    }
+    return rowToProduct(data as ProductRow);
   } catch (err) {
     console.error(
-      "[products] getProductById failed:",
+      "[products] getProductById threw:",
       err instanceof Error ? err.message : err
     );
     return null;
