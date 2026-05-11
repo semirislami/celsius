@@ -4,7 +4,7 @@ import {
   Boxes,
   Coins,
   Layers,
-  PercentSquare,
+  Percent,
   Plus,
   Tag,
   TrendingUp
@@ -23,7 +23,14 @@ export const revalidate = 0;
 export default async function AdminDashboard({ params }: { params: { locale: string } }) {
   if (!isLocale(params.locale)) notFound();
   const locale = params.locale as Locale;
-  const products = await listProducts();
+
+  let products: Awaited<ReturnType<typeof listProducts>> = [];
+  try {
+    products = await listProducts();
+  } catch (err) {
+    console.error("[admin/page] listProducts failed:", err);
+  }
+
   const a = computeAnalytics(products);
 
   const primary: StatCardItem[] = [
@@ -77,7 +84,7 @@ export default async function AdminDashboard({ params }: { params: { locale: str
       key: "avgDiscount",
       labelKey: "admin.analytics.avgDiscount",
       value: `${a.avgDiscountPct.toFixed(1)}%`,
-      Icon: PercentSquare,
+      Icon: Percent,
       tone: "heating"
     },
     {
