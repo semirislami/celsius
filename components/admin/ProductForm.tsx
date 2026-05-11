@@ -7,23 +7,20 @@ import { useRef, useState } from "react";
 import { ArrowLeft, ImagePlus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Locale } from "@/lib/i18n/settings";
-import {
-  BADGES,
-  BRANDS,
-  CAPACITIES,
-  ENERGY_CLASSES,
-  type Product
-} from "@/lib/products/types";
+import { CAPACITIES, type Product } from "@/lib/products/types";
 import { uploadProductImage } from "@/lib/products/uploadClient";
 
-type Mode =
-  | { kind: "create" }
-  | { kind: "edit"; product: Product };
+type Mode = { kind: "create" } | { kind: "edit"; product: Product };
 
 type Props = {
   locale: Locale;
   mode: Mode;
 };
+
+// Defaults for fields no longer surfaced in the UI but still required by
+// the data model / DB schema.
+const DEFAULT_BRAND = "celsius-prime";
+const DEFAULT_ENERGY_CLASS = "A+++";
 
 export function ProductForm({ locale, mode }: Props) {
   const { t } = useTranslation();
@@ -31,6 +28,7 @@ export function ProductForm({ locale, mode }: Props) {
   const isEdit = mode.kind === "edit";
   const initial = isEdit ? mode.product : null;
 
+  // ---- core fields ----
   const [name, setName] = useState(initial?.name ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
@@ -43,29 +41,30 @@ export function ProductForm({ locale, mode }: Props) {
   const [capacityBtu, setCapacityBtu] = useState<string>(
     initial ? String(initial.capacityBtu) : "12000"
   );
-  const [brand, setBrand] = useState<string>(initial?.brand ?? "celsius-prime");
-  const [energyClass, setEnergyClass] = useState<string>(
-    initial?.energyClass ?? "A+++"
-  );
-  const [badge, setBadge] = useState<string>(initial?.badge ?? "");
-  const [guaranteeYears, setGuaranteeYears] = useState<string>(
-    initial?.guaranteeYears ? String(initial.guaranteeYears) : "5"
-  );
-  const [noiseDb, setNoiseDb] = useState<string>(
-    initial?.noiseDb ? String(initial.noiseDb) : ""
-  );
 
-  const [specsCooling, setSpecsCooling] = useState(initial?.specs?.cooling ?? "");
-  const [specsHeating, setSpecsHeating] = useState(initial?.specs?.heating ?? "");
-  const [specsSeer, setSpecsSeer] = useState(initial?.specs?.seer ?? "");
-  const [specsTemp, setSpecsTemp] = useState(initial?.specs?.temp ?? "");
-  const [specsNoise, setSpecsNoise] = useState(initial?.specs?.noise ?? "");
-  const [specsGas, setSpecsGas] = useState(initial?.specs?.gas ?? "");
-  const [specsWifi, setSpecsWifi] = useState(initial?.specs?.wifi ?? "");
+  // ---- specs (screenshot fields) ----
+  const s0 = initial?.specs ?? {};
+  const [isInverter, setIsInverter] = useState<boolean>(!!s0.isInverter);
+  const [maxPowerKw, setMaxPowerKw] = useState(s0.maxPowerKw ?? "");
+  const [coolingHeatingPower, setCoolingHeatingPower] = useState(s0.coolingHeatingPower ?? "");
+  const [coolingEnergyClass, setCoolingEnergyClass] = useState(s0.coolingEnergyClass ?? "");
+  const [heatingEnergyClass, setHeatingEnergyClass] = useState(s0.heatingEnergyClass ?? "");
+  const [airCirculation, setAirCirculation] = useState(s0.airCirculation ?? "");
+  const [operatingTemp, setOperatingTemp] = useState(s0.operatingTemp ?? "");
+  const [seer, setSeer] = useState(s0.seer ?? "");
+  const [eer, setEer] = useState(s0.eer ?? "");
+  const [scop, setScop] = useState(s0.scop ?? "");
+  const [cop, setCop] = useState(s0.cop ?? "");
+  const [noiseLevel, setNoiseLevel] = useState(s0.noiseLevel ?? "");
+  const [annualConsumptionHeating, setAnnualConsumptionHeating] = useState(s0.annualConsumptionHeating ?? "");
+  const [annualConsumptionCooling, setAnnualConsumptionCooling] = useState(s0.annualConsumptionCooling ?? "");
+  const [installationKitIncluded, setInstallationKitIncluded] = useState<boolean>(!!s0.installationKitIncluded);
 
+  // ---- image ----
   const [imagePreview, setImagePreview] = useState<string | null>(initial?.imageUrl ?? null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // ---- submit state ----
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,8 +84,6 @@ export function ProductForm({ locale, mode }: Props) {
       const file = fd.get("image");
       const hasNewFile = file instanceof File && file.size > 0;
 
-      // Step 1: if a new image was picked, upload it directly to Supabase
-      // Storage. Server only ever sees the public URL, never the bytes.
       let imageUrl = initial?.imageUrl ?? "";
       if (hasNewFile) {
         const result = await uploadProductImage(file as File);
@@ -95,40 +92,35 @@ export function ProductForm({ locale, mode }: Props) {
         throw new Error(t("admin.form.errors.image"));
       }
 
-      // Step 2: send the rest as JSON.
       const payload: Record<string, unknown> = {
-        name: fd.get("name"),
-        slug: fd.get("slug"),
-        description: fd.get("description"),
-        priceMkd: Number(fd.get("priceMkd")),
-        oldPriceMkd: fd.get("oldPriceMkd")
-          ? Number(fd.get("oldPriceMkd"))
-          : undefined,
-        capacityBtu: Number(fd.get("capacityBtu")),
-        brand: fd.get("brand"),
-        energyClass: fd.get("energyClass"),
-        badge: fd.get("badge") || null,
-        guaranteeYears: fd.get("guaranteeYears")
-          ? Number(fd.get("guaranteeYears"))
-          : undefined,
-        noiseDb: fd.get("noiseDb") ? Number(fd.get("noiseDb")) : undefined,
+        name,
+        slug,
+        description,
+        priceMkd: Number(priceMkd),
+        oldPriceMkd: oldPriceMkd ? Number(oldPriceMkd) : undefined,
+        capacityBtu: Number(capacityBtu),
+        brand: DEFAULT_BRAND,
+        energyClass: DEFAULT_ENERGY_CLASS,
+        badge: null,
         specs: {
-          cooling: fd.get("specsCooling") || undefined,
-          heating: fd.get("specsHeating") || undefined,
-          seer: fd.get("specsSeer") || undefined,
-          temp: fd.get("specsTemp") || undefined,
-          noise: fd.get("specsNoise") || undefined,
-          gas: fd.get("specsGas") || undefined,
-          wifi: fd.get("specsWifi") || undefined
+          isInverter,
+          maxPowerKw: maxPowerKw || undefined,
+          coolingHeatingPower: coolingHeatingPower || undefined,
+          coolingEnergyClass: coolingEnergyClass || undefined,
+          heatingEnergyClass: heatingEnergyClass || undefined,
+          airCirculation: airCirculation || undefined,
+          operatingTemp: operatingTemp || undefined,
+          seer: seer || undefined,
+          eer: eer || undefined,
+          scop: scop || undefined,
+          cop: cop || undefined,
+          noiseLevel: noiseLevel || undefined,
+          annualConsumptionHeating: annualConsumptionHeating || undefined,
+          annualConsumptionCooling: annualConsumptionCooling || undefined,
+          installationKitIncluded
         }
       };
-      // Only include imageUrl on edit if the user actually changed it,
-      // otherwise leave the existing one untouched server-side.
-      if (!isEdit) {
-        payload.imageUrl = imageUrl;
-      } else if (hasNewFile) {
-        payload.imageUrl = imageUrl;
-      }
+      if (!isEdit || hasNewFile) payload.imageUrl = imageUrl;
 
       const productId = isEdit
         ? (mode as { kind: "edit"; product: Product }).product.id
@@ -232,69 +224,28 @@ export function ProductForm({ locale, mode }: Props) {
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
+        {/* Basic info */}
         <Section title={t("admin.form.section.basic")} className="lg:col-span-2">
           <Field id="name" label={t("admin.form.fields.name")} required>
-            <input
-              id="name"
-              name="name"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t("admin.form.fields.namePlaceholder")}
-              className={inputCls}
-            />
+            <input id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} placeholder={t("admin.form.fields.namePlaceholder")} className={inputCls} />
           </Field>
           <Field id="slug" label={t("admin.form.fields.slug")} hint={t("admin.form.fields.slugHint")}>
-            <input
-              id="slug"
-              name="slug"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              className={inputCls}
-              placeholder="celsius-pro-quiet-12000"
-            />
+            <input id="slug" name="slug" value={slug} onChange={(e) => setSlug(e.target.value)} className={inputCls} placeholder="celsius-pro-quiet-12000" />
           </Field>
           <Field id="description" label={t("admin.form.fields.description")} required>
-            <textarea
-              id="description"
-              name="description"
-              required
-              rows={4}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t("admin.form.fields.descriptionPlaceholder")}
-              className={inputCls}
-            />
+            <textarea id="description" name="description" required rows={4} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("admin.form.fields.descriptionPlaceholder")} className={inputCls} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field id="priceMkd" label={t("admin.form.fields.priceMkd")} required>
-              <input
-                id="priceMkd"
-                name="priceMkd"
-                type="number"
-                min={0}
-                step={1}
-                required
-                value={priceMkd}
-                onChange={(e) => setPriceMkd(e.target.value)}
-                className={inputCls}
-              />
+              <input id="priceMkd" name="priceMkd" type="number" min={0} step={1} required value={priceMkd} onChange={(e) => setPriceMkd(e.target.value)} className={inputCls} />
             </Field>
             <Field id="oldPriceMkd" label={t("admin.form.fields.oldPriceMkd")}>
-              <input
-                id="oldPriceMkd"
-                name="oldPriceMkd"
-                type="number"
-                min={0}
-                step={1}
-                value={oldPriceMkd}
-                onChange={(e) => setOldPriceMkd(e.target.value)}
-                className={inputCls}
-              />
+              <input id="oldPriceMkd" name="oldPriceMkd" type="number" min={0} step={1} value={oldPriceMkd} onChange={(e) => setOldPriceMkd(e.target.value)} className={inputCls} />
             </Field>
           </div>
         </Section>
 
+        {/* Image */}
         <Section title={t("admin.form.section.media")}>
           <input
             ref={fileRef}
@@ -313,67 +264,31 @@ export function ProductForm({ locale, mode }: Props) {
           >
             {imagePreview ? (
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-white ring-1 ring-ink/5">
-                <Image
-                  src={imagePreview}
-                  alt=""
-                  fill
-                  sizes="320px"
-                  className="object-cover"
-                  unoptimized
-                />
+                <Image src={imagePreview} alt="" fill sizes="320px" className="object-cover" unoptimized />
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2 py-8 text-ink-muted">
                 <span className="grid h-12 w-12 place-items-center rounded-full bg-white text-celsius-500 ring-1 ring-ink/5">
                   <ImagePlus size={20} />
                 </span>
-                <span className="text-sm font-medium text-ink">
-                  {t("admin.form.fields.image")}
-                </span>
+                <span className="text-sm font-medium text-ink">{t("admin.form.fields.image")}</span>
                 <span className="text-xs">{t("admin.form.fields.imageHint")}</span>
               </div>
             )}
           </button>
           {imagePreview && (
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="mt-3 w-full rounded-full bg-canvas-soft px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted hover:bg-canvas-muted hover:text-ink"
-            >
+            <button type="button" onClick={() => fileRef.current?.click()} className="mt-3 w-full rounded-full bg-canvas-soft px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted hover:bg-canvas-muted hover:text-ink">
               {t("admin.form.fields.imageReplace")}
             </button>
           )}
-          <p className="mt-3 text-xs text-ink-muted">
-            {t("admin.form.fields.imageHint")}
-          </p>
+          <p className="mt-3 text-xs text-ink-muted">{t("admin.form.fields.imageHint")}</p>
         </Section>
 
-        <Section title={t("admin.form.section.classification")} className="lg:col-span-3">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <Field id="brand" label={t("admin.form.fields.brand")}>
-              <select
-                id="brand"
-                name="brand"
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
-                className={inputCls}
-              >
-                {BRANDS.map((b) => (
-                  <option key={b} value={b}>
-                    {t(`shop.filters.brands.${b}`)}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field id="capacityBtu" label={t("admin.form.fields.capacityBtu")} required>
-              <select
-                id="capacityBtu"
-                name="capacityBtu"
-                required
-                value={capacityBtu}
-                onChange={(e) => setCapacityBtu(e.target.value)}
-                className={inputCls}
-              >
+        {/* Перформанси */}
+        <Section title={t("admin.form.specPanel.performance")} className="lg:col-span-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <Field id="capacityBtu" label={t("admin.form.specs.power")} required>
+              <select id="capacityBtu" name="capacityBtu" required value={capacityBtu} onChange={(e) => setCapacityBtu(e.target.value)} className={inputCls}>
                 {CAPACITIES.map((c) => (
                   <option key={c} value={c}>
                     {c.toLocaleString("mk-MK").replace(/,/g, ".")} BTU
@@ -381,88 +296,70 @@ export function ProductForm({ locale, mode }: Props) {
                 ))}
               </select>
             </Field>
-            <Field id="energyClass" label={t("admin.form.fields.energyClass")}>
-              <select
-                id="energyClass"
-                name="energyClass"
-                value={energyClass}
-                onChange={(e) => setEnergyClass(e.target.value)}
-                className={inputCls}
-              >
-                {ENERGY_CLASSES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+          </div>
+        </Section>
+
+        {/* Главни карактеристики (left) */}
+        <Section title={t("admin.form.specPanel.mainLeft")} className="lg:col-span-3">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" checked={isInverter} onChange={(e) => setIsInverter(e.target.checked)} className="h-4 w-4 rounded border-ink/20 text-celsius-500 focus:ring-celsius-300" />
+            <span className="text-sm font-medium text-ink">{t("admin.form.specs.isInverter")}</span>
+          </label>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <Field id="maxPowerKw" label={t("admin.form.specs.maxPowerKw")}>
+              <input id="maxPowerKw" value={maxPowerKw} onChange={(e) => setMaxPowerKw(e.target.value)} placeholder="3.7kW" className={inputCls} />
             </Field>
-            <Field id="badge" label={t("admin.form.fields.badge")}>
-              <select
-                id="badge"
-                name="badge"
-                value={badge}
-                onChange={(e) => setBadge(e.target.value)}
-                className={inputCls}
-              >
-                <option value="">{t("admin.form.fields.badgeNone")}</option>
-                {BADGES.map((b) => (
-                  <option key={b} value={b}>
-                    {t(`shop.badge.${b}`)}
-                  </option>
-                ))}
-              </select>
+            <Field id="coolingHeatingPower" label={t("admin.form.specs.coolingHeatingPower")}>
+              <input id="coolingHeatingPower" value={coolingHeatingPower} onChange={(e) => setCoolingHeatingPower(e.target.value)} placeholder="3700/3800W" className={inputCls} />
             </Field>
-            <Field id="guaranteeYears" label={t("admin.form.fields.guaranteeYears")}>
-              <input
-                id="guaranteeYears"
-                name="guaranteeYears"
-                type="number"
-                min={0}
-                step={1}
-                value={guaranteeYears}
-                onChange={(e) => setGuaranteeYears(e.target.value)}
-                className={inputCls}
-              />
+            <Field id="coolingEnergyClass" label={t("admin.form.specs.coolingEnergyClass")}>
+              <input id="coolingEnergyClass" value={coolingEnergyClass} onChange={(e) => setCoolingEnergyClass(e.target.value)} placeholder="A++" className={inputCls} />
             </Field>
-            <Field id="noiseDb" label={t("admin.form.fields.noiseDb")}>
-              <input
-                id="noiseDb"
-                name="noiseDb"
-                type="number"
-                min={0}
-                step={0.1}
-                value={noiseDb}
-                onChange={(e) => setNoiseDb(e.target.value)}
-                className={inputCls}
-              />
+            <Field id="heatingEnergyClass" label={t("admin.form.specs.heatingEnergyClass")}>
+              <input id="heatingEnergyClass" value={heatingEnergyClass} onChange={(e) => setHeatingEnergyClass(e.target.value)} placeholder="A+" className={inputCls} />
+            </Field>
+            <Field id="airCirculation" label={t("admin.form.specs.airCirculation")}>
+              <input id="airCirculation" value={airCirculation} onChange={(e) => setAirCirculation(e.target.value)} placeholder="до 570m³/h" className={inputCls} />
+            </Field>
+            <Field id="operatingTemp" label={t("admin.form.specs.operatingTemp")}>
+              <input id="operatingTemp" value={operatingTemp} onChange={(e) => setOperatingTemp(e.target.value)} placeholder="Cooling:-15-53/Heating:-20-30°C" className={inputCls} />
             </Field>
           </div>
         </Section>
 
-        <Section title={t("admin.form.section.specs")} className="lg:col-span-3">
+        {/* Главни карактеристики (right top) */}
+        <Section title={t("admin.form.specPanel.mainRight")} className="lg:col-span-3">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <Field id="specsCooling" label={t("admin.form.fields.specsCooling")}>
-              <input id="specsCooling" name="specsCooling" value={specsCooling} onChange={(e) => setSpecsCooling(e.target.value)} placeholder="12000 BTU / 3.5 kW" className={inputCls} />
+            <Field id="seer" label={t("admin.form.specs.seer")}>
+              <input id="seer" value={seer} onChange={(e) => setSeer(e.target.value)} placeholder="6.1" className={inputCls} />
             </Field>
-            <Field id="specsHeating" label={t("admin.form.fields.specsHeating")}>
-              <input id="specsHeating" name="specsHeating" value={specsHeating} onChange={(e) => setSpecsHeating(e.target.value)} placeholder="13000 BTU / 3.8 kW" className={inputCls} />
+            <Field id="eer" label={t("admin.form.specs.eer")}>
+              <input id="eer" value={eer} onChange={(e) => setEer(e.target.value)} placeholder="3" className={inputCls} />
             </Field>
-            <Field id="specsSeer" label={t("admin.form.fields.specsSeer")}>
-              <input id="specsSeer" name="specsSeer" value={specsSeer} onChange={(e) => setSpecsSeer(e.target.value)} placeholder="8.5 / 5.1" className={inputCls} />
+            <Field id="scop" label={t("admin.form.specs.scop")}>
+              <input id="scop" value={scop} onChange={(e) => setScop(e.target.value)} placeholder="4" className={inputCls} />
             </Field>
-            <Field id="specsTemp" label={t("admin.form.fields.specsTemp")}>
-              <input id="specsTemp" name="specsTemp" value={specsTemp} onChange={(e) => setSpecsTemp(e.target.value)} placeholder="−25°C — +50°C" className={inputCls} />
+            <Field id="cop" label={t("admin.form.specs.cop")}>
+              <input id="cop" value={cop} onChange={(e) => setCop(e.target.value)} placeholder="3.4" className={inputCls} />
             </Field>
-            <Field id="specsNoise" label={t("admin.form.fields.specsNoise")}>
-              <input id="specsNoise" name="specsNoise" value={specsNoise} onChange={(e) => setSpecsNoise(e.target.value)} placeholder="19 / 24 / 30 / 38 dB" className={inputCls} />
+            <Field id="noiseLevel" label={t("admin.form.specs.noiseLevel")}>
+              <input id="noiseLevel" value={noiseLevel} onChange={(e) => setNoiseLevel(e.target.value)} placeholder="53dB" className={inputCls} />
             </Field>
-            <Field id="specsGas" label={t("admin.form.fields.specsGas")}>
-              <input id="specsGas" name="specsGas" value={specsGas} onChange={(e) => setSpecsGas(e.target.value)} placeholder="R32" className={inputCls} />
+            <Field id="annualConsumptionHeating" label={t("admin.form.specs.annualHeating")}>
+              <input id="annualConsumptionHeating" value={annualConsumptionHeating} onChange={(e) => setAnnualConsumptionHeating(e.target.value)} placeholder="770kWh/a" className={inputCls} />
             </Field>
-            <Field id="specsWifi" label={t("admin.form.fields.specsWifi")}>
-              <input id="specsWifi" name="specsWifi" value={specsWifi} onChange={(e) => setSpecsWifi(e.target.value)} className={inputCls} />
+            <Field id="annualConsumptionCooling" label={t("admin.form.specs.annualCooling")}>
+              <input id="annualConsumptionCooling" value={annualConsumptionCooling} onChange={(e) => setAnnualConsumptionCooling(e.target.value)} placeholder="196kWh/a" className={inputCls} />
             </Field>
           </div>
+        </Section>
+
+        {/* Includes */}
+        <Section title={t("admin.form.specPanel.includes")} className="lg:col-span-3">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" checked={installationKitIncluded} onChange={(e) => setInstallationKitIncluded(e.target.checked)} className="h-4 w-4 rounded border-ink/20 text-celsius-500 focus:ring-celsius-300" />
+            <span className="text-sm font-medium text-ink">{t("admin.form.specs.installKit")}</span>
+          </label>
         </Section>
       </div>
     </form>

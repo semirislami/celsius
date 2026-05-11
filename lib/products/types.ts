@@ -10,9 +10,30 @@ export type Badge = (typeof BADGES)[number];
 export const CAPACITIES = [9000, 12000, 18000, 24000] as const;
 
 export interface ProductSpecs {
+  // Перформанси / Главни карактеристики (left column)
+  isInverter?: boolean;
+  maxPowerKw?: string;
+  coolingHeatingPower?: string;
+  coolingEnergyClass?: string;
+  heatingEnergyClass?: string;
+  airCirculation?: string;
+  operatingTemp?: string;
+
+  // Главни карактеристики (right column)
+  seer?: string;
+  eer?: string;
+  scop?: string;
+  cop?: string;
+  noiseLevel?: string;
+  annualConsumptionHeating?: string;
+  annualConsumptionCooling?: string;
+
+  // Вклучено
+  installationKitIncluded?: boolean;
+
+  // Legacy (preserved so existing rows still display)
   cooling?: string;
   heating?: string;
-  seer?: string;
   temp?: string;
   noise?: string;
   gas?: string;

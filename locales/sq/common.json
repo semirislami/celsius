@@ -137,8 +137,31 @@
         "filter": { "title": "Filtër me 7-Shtresa", "body": "Sistem i integruar pastrimi i ajrit eliminon 99% të baktereve, pluhurit dhe alergjenëve, duke ofruar ajër të freskët për shtëpinë tuaj." }
       }
     },
+    "specPanel": {
+      "performance": "Performanca",
+      "mainLeft": "Karakteristikat kryesore",
+      "mainRight": "Karakteristikat kryesore",
+      "includes": "Përfshirë"
+    },
     "specs": {
       "title": "Specifikimet teknike",
+      "power": "Fuqia",
+      "isInverter": "Kondicioner inverter",
+      "maxPowerKw": "Fuqia maksimale",
+      "coolingHeatingPower": "Fuqia ftohje/ngrohje deri",
+      "coolingEnergyClass": "Klasa energjetike e ftohjes",
+      "heatingEnergyClass": "Klasa energjetike e ngrohjes",
+      "airCirculation": "Qarkullimi i ajrit",
+      "operatingTemp": "Temperatura e punës",
+      "seer": "SEER",
+      "eer": "EER",
+      "scop": "SCOP",
+      "cop": "COP",
+      "noiseLevel": "Niveli i zhurmës (njësia e brendshme)",
+      "annualHeating": "Konsumi vjetor i energjisë për ngrohje",
+      "annualCooling": "Konsumi vjetor i energjisë për ftohje",
+      "installKit": "Kit instalimi i përfshirë",
+      "titleLegacy": "Specifikimet teknike",
       "rows": {
         "cooling": { "label": "Kapaciteti i ftohjes", "value": "12000 BTU / 3.5 kW" },
         "heating": { "label": "Kapaciteti i ngrohjes", "value": "13000 BTU / 3.8 kW" },
@@ -292,6 +315,30 @@
       "newSubtitle": "Plotësoni detajet dhe ngarkoni një imazh për sistemin e ri Celsius.",
       "editSubtitle": "Përditësoni detajet për këtë produkt.",
       "section": { "basic": "Informacioni bazë", "media": "Imazhi", "classification": "Klasifikimi", "specs": "Specifikime teknike (opsionale)" },
+      "specPanel": {
+        "performance": "Performanca",
+        "mainLeft": "Karakteristikat kryesore",
+        "mainRight": "Karakteristikat kryesore",
+        "includes": "Përfshirë"
+      },
+      "specs": {
+        "power": "Fuqia",
+        "isInverter": "Kondicioner inverter",
+        "maxPowerKw": "Fuqia maksimale",
+        "coolingHeatingPower": "Fuqia ftohje/ngrohje deri",
+        "coolingEnergyClass": "Klasa energjetike e ftohjes",
+        "heatingEnergyClass": "Klasa energjetike e ngrohjes",
+        "airCirculation": "Qarkullimi i ajrit",
+        "operatingTemp": "Temperatura e punës",
+        "seer": "SEER",
+        "eer": "EER",
+        "scop": "SCOP",
+        "cop": "COP",
+        "noiseLevel": "Niveli i zhurmës (njësia e brendshme)",
+        "annualHeating": "Konsumi vjetor i energjisë për ngrohje",
+        "annualCooling": "Konsumi vjetor i energjisë për ftohje",
+        "installKit": "Kit instalimi i përfshirë"
+      },
       "fields": {
         "name": "Emri i produktit",
         "namePlaceholder": "p.sh. Celsius Pro-Quiet 12000",

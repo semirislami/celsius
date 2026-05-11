@@ -85,17 +85,36 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   if (has("noiseDb")) patch.noiseDb = optNum(b.noiseDb);
 
   if (has("specs")) {
-    const specsRaw = (b.specs ?? {}) as Record<string, unknown>;
+    const r = (b.specs ?? {}) as Record<string, unknown>;
+    const s = (k: string) => (typeof r[k] === "string" ? (r[k] as string).trim() : "");
+    const bb = (k: string) => r[k] === true || r[k] === "true" || r[k] === 1 || r[k] === "1";
     const specs: ProductSpecs = {
-      cooling: str(specsRaw.cooling) || undefined,
-      heating: str(specsRaw.heating) || undefined,
-      seer: str(specsRaw.seer) || undefined,
-      temp: str(specsRaw.temp) || undefined,
-      noise: str(specsRaw.noise) || undefined,
-      gas: str(specsRaw.gas) || undefined,
-      wifi: str(specsRaw.wifi) || undefined
+      isInverter: bb("isInverter") || undefined,
+      maxPowerKw: s("maxPowerKw") || undefined,
+      coolingHeatingPower: s("coolingHeatingPower") || undefined,
+      coolingEnergyClass: s("coolingEnergyClass") || undefined,
+      heatingEnergyClass: s("heatingEnergyClass") || undefined,
+      airCirculation: s("airCirculation") || undefined,
+      operatingTemp: s("operatingTemp") || undefined,
+      seer: s("seer") || undefined,
+      eer: s("eer") || undefined,
+      scop: s("scop") || undefined,
+      cop: s("cop") || undefined,
+      noiseLevel: s("noiseLevel") || undefined,
+      annualConsumptionHeating: s("annualConsumptionHeating") || undefined,
+      annualConsumptionCooling: s("annualConsumptionCooling") || undefined,
+      installationKitIncluded: bb("installationKitIncluded") || undefined,
+      cooling: s("cooling") || undefined,
+      heating: s("heating") || undefined,
+      temp: s("temp") || undefined,
+      noise: s("noise") || undefined,
+      gas: s("gas") || undefined,
+      wifi: s("wifi") || undefined
     };
-    patch.specs = Object.values(specs).some(Boolean) ? specs : undefined;
+    const has_any = Object.values(specs).some(
+      (v) => v !== undefined && v !== "" && v !== false
+    );
+    patch.specs = has_any ? specs : undefined;
   }
 
   // Image: client uploads directly and only sends the new URL
