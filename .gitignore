@@ -11,3 +11,4 @@ build/
 # Local-only artifacts (Supabase is the source of truth in production)
 /data/
 /public/uploads/
+.dev.log
