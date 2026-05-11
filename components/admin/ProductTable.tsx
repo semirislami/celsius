@@ -3,30 +3,50 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { formatMkd } from "@/lib/products/format";
 import type { Locale } from "@/lib/i18n/settings";
 import type { Product } from "@/lib/products/types";
+import { brandLabel } from "@/lib/products/types";
 
 type Props = { locale: Locale; products: Product[] };
 
 export function ProductTable({ locale, products }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
+
+  // Local state so the row disappears immediately after a successful delete —
+  // doesn't depend on router.refresh propagating the server-side change.
+  const [items, setItems] = useState<Product[]>(products);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Re-sync if the parent passes a new list (after router.refresh).
+  useEffect(() => {
+    setItems(products);
+  }, [products]);
 
   const handleDelete = async (id: string) => {
     if (!window.confirm(t("admin.form.deleteConfirm"))) return;
     setDeletingId(id);
+    setError(null);
     try {
-      const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("delete failed");
+      const res = await fetch(`/api/products/${id}`, {
+        method: "DELETE",
+        cache: "no-store"
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(body.error || `Delete failed (${res.status})`);
+      }
+      // Optimistically remove + ask Next to refetch server data.
+      setItems((prev) => prev.filter((p) => p.id !== id));
       router.refresh();
-    } catch {
-      window.alert(t("admin.form.errors.generic"));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("admin.form.errors.generic"));
     } finally {
       setDeletingId(null);
     }
@@ -48,7 +68,13 @@ export function ProductTable({ locale, products }: Props) {
         </Link>
       </div>
 
-      {products.length === 0 ? (
+      {error && (
+        <div className="border-b border-ink/5 bg-rose-50 px-6 py-3 text-sm text-rose-700">
+          {error}
+        </div>
+      )}
+
+      {items.length === 0 ? (
         <div className="px-6 py-12 text-center text-sm text-ink-muted">
           {t("admin.products2.empty")}
         </div>
@@ -64,10 +90,13 @@ export function ProductTable({ locale, products }: Props) {
               </tr>
             </thead>
             <tbody>
-              {products.map((p, i) => (
+              {items.map((p, i) => (
                 <tr
                   key={p.id}
-                  className={cn(i !== products.length - 1 && "border-b border-ink/5")}
+                  className={cn(
+                    i !== items.length - 1 && "border-b border-ink/5",
+                    deletingId === p.id && "opacity-50"
+                  )}
                 >
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-4">
@@ -90,7 +119,8 @@ export function ProductTable({ locale, products }: Props) {
                           {p.name}
                         </Link>
                         <div className="text-xs text-ink-muted">
-                          {p.capacityBtu.toLocaleString("mk-MK").replace(/,/g, ".")} BTU · {p.energyClass}
+                          {brandLabel(p.brand)} ·{" "}
+                          {p.capacityBtu.toLocaleString("mk-MK").replace(/,/g, ".")} BTU
                         </div>
                       </div>
                     </div>
@@ -117,9 +147,13 @@ export function ProductTable({ locale, products }: Props) {
                         aria-label={t("admin.products2.delete")}
                         disabled={deletingId === p.id}
                         onClick={() => handleDelete(p.id)}
-                        className="grid h-9 w-9 place-items-center rounded-full text-ink-muted hover:bg-rose-50 hover:text-rose-500 disabled:opacity-50"
+                        className="grid h-9 w-9 place-items-center rounded-full text-ink-muted transition hover:bg-rose-50 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <Trash2 size={15} />
+                        {deletingId === p.id ? (
+                          <Loader2 size={15} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={15} />
+                        )}
                       </button>
                     </div>
                   </td>

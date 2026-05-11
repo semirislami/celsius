@@ -270,9 +270,18 @@
     "user": { "name": "Albanian Admin", "role": "Administrator" },
     "nav": { "analytics": "Analytics", "products": "Products", "orders": "Orders", "settings": "Settings" },
     "stats": {
-      "visitors": "Vizitorë Ditorë", "visitorsValue": "1,284", "visitorsTrend": "+12%",
-      "requests": "Kërkesa të Reja", "requestsValue": "42", "requestsTrend": "+5%",
-      "views": "Shikime të Produkteve", "viewsValue": "8,902", "viewsTrend": "−2%"
+      "visitors": "Vizitorë Ditorë", "visitorsValue": "0", "visitorsTrend": "0%",
+      "requests": "Kërkesa të Reja", "requestsValue": "0", "requestsTrend": "0%",
+      "views": "Shikime të Produkteve", "viewsValue": "0", "viewsTrend": "0%"
+    },
+    "analytics": {
+      "totalProducts": "Totali i produkteve",
+      "recentProducts": "Të shtuara së fundmi",
+      "recentWindow": "(7 ditë)",
+      "brands": "Marka aktive",
+      "recentTitle": "Të shtuara së fundmi",
+      "viewAll": "Shih të gjitha",
+      "empty": "Ende nuk ka produkte."
     },
     "products": {
       "title": "Menaxhimi i Produkteve",

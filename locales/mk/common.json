@@ -270,9 +270,18 @@
     "user": { "name": "Macedonian Admin", "role": "Administrator" },
     "nav": { "analytics": "Analytics", "products": "Products", "orders": "Orders", "settings": "Settings" },
     "stats": {
-      "visitors": "Дневни Посетители", "visitorsValue": "1,284", "visitorsTrend": "+12%",
-      "requests": "Нови Побарувања", "requestsValue": "42", "requestsTrend": "+5%",
-      "views": "Прегледи на Производи", "viewsValue": "8,902", "viewsTrend": "−2%"
+      "visitors": "Дневни Посетители", "visitorsValue": "0", "visitorsTrend": "0%",
+      "requests": "Нови Побарувања", "requestsValue": "0", "requestsTrend": "0%",
+      "views": "Прегледи на Производи", "viewsValue": "0", "viewsTrend": "0%"
+    },
+    "analytics": {
+      "totalProducts": "Вкупно производи",
+      "recentProducts": "Додадени неодамна",
+      "recentWindow": "(7 дена)",
+      "brands": "Активни брендови",
+      "recentTitle": "Неодамна додадени",
+      "viewAll": "Види ги сите",
+      "empty": "Сè уште нема производи."
     },
     "products": {
       "title": "Менаџмент на Производи",

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createProduct, listProducts } from "@/lib/products/store";
 import {
   BADGES,
@@ -67,6 +68,7 @@ export async function POST(req: Request) {
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
   const product = await createProduct(parsed.input);
+  revalidatePath("/", "layout");
   return NextResponse.json({ product }, { status: 201 });
 }
 

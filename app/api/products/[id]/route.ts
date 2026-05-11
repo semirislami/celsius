@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { deleteProduct, getProductById, updateProduct } from "@/lib/products/store";
 import { deleteUploadedImage } from "@/lib/products/upload";
 import {
@@ -129,6 +130,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
   const updated = await updateProduct(params.id, patch);
   if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  revalidatePath("/", "layout");
   return NextResponse.json({ product: updated });
 }
 
@@ -138,5 +140,13 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   await deleteUploadedImage(existing.imageUrl);
   const ok = await deleteProduct(params.id);
   if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ ok: true });
+
+  // Invalidate every page that lists products so the next navigation picks up
+  // the change immediately on Vercel (no stale RSC payload).
+  revalidatePath("/", "layout");
+
+  return NextResponse.json(
+    { ok: true },
+    { headers: { "Cache-Control": "no-store" } }
+  );
 }

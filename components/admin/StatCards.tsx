@@ -1,50 +1,76 @@
 "use client";
 
-import { Eye, Mail, Users, type LucideIcon } from "lucide-react";
+import { Boxes, Layers, Plus, type LucideIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
-const cards: {
-  key: "visitors" | "requests" | "views";
-  Icon: LucideIcon;
-  iconBg: string;
-  iconColor: string;
-  positive: boolean;
-}[] = [
-  { key: "visitors", Icon: Users, iconBg: "bg-celsius-50", iconColor: "text-celsius-500", positive: true },
-  { key: "requests", Icon: Mail, iconBg: "bg-heating-50", iconColor: "text-heating-500", positive: true },
-  { key: "views", Icon: Eye, iconBg: "bg-canvas-muted", iconColor: "text-ink-soft", positive: false }
-];
+type Props = {
+  totalProducts: number;
+  recentProducts: number;
+  brandCount: number;
+};
 
-export function StatCards() {
+export function StatCards({ totalProducts, recentProducts, brandCount }: Props) {
   const { t } = useTranslation();
+
+  const cards: {
+    labelKey: string;
+    value: number;
+    Icon: LucideIcon;
+    bg: string;
+    color: string;
+    sublabelKey?: string;
+  }[] = [
+    {
+      labelKey: "admin.analytics.totalProducts",
+      value: totalProducts,
+      Icon: Boxes,
+      bg: "bg-celsius-50",
+      color: "text-celsius-500"
+    },
+    {
+      labelKey: "admin.analytics.recentProducts",
+      sublabelKey: "admin.analytics.recentWindow",
+      value: recentProducts,
+      Icon: Plus,
+      bg: "bg-heating-50",
+      color: "text-heating-500"
+    },
+    {
+      labelKey: "admin.analytics.brands",
+      value: brandCount,
+      Icon: Layers,
+      bg: "bg-canvas-muted",
+      color: "text-ink-soft"
+    }
+  ];
+
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      {cards.map(({ key, Icon, iconBg, iconColor, positive }) => (
+      {cards.map(({ labelKey, sublabelKey, value, Icon, bg, color }) => (
         <article
-          key={key}
+          key={labelKey}
           className="rounded-3xl bg-white p-6 shadow-card ring-1 ring-ink/5"
         >
-          <div className="flex items-start justify-between">
-            <span className={cn("inline-flex h-11 w-11 items-center justify-center rounded-2xl", iconBg, iconColor)}>
-              <Icon size={20} />
-            </span>
-            <span
-              className={cn(
-                "rounded-full px-2.5 py-1 text-xs font-semibold",
-                positive
-                  ? "bg-emerald-50 text-emerald-600"
-                  : "bg-rose-50 text-rose-600"
-              )}
-            >
-              {t(`admin.stats.${key}Trend`)}
-            </span>
-          </div>
+          <span
+            className={cn(
+              "inline-flex h-11 w-11 items-center justify-center rounded-2xl",
+              bg,
+              color
+            )}
+          >
+            <Icon size={20} />
+          </span>
           <div className="mt-6 text-sm text-ink-muted">
-            {t(`admin.stats.${key}`)}
+            {t(labelKey)}
+            {sublabelKey && (
+              <span className="ml-1 text-xs text-ink-muted/70">
+                {t(sublabelKey)}
+              </span>
+            )}
           </div>
           <div className="mt-1 text-3xl font-semibold tracking-tight text-ink">
-            {t(`admin.stats.${key}Value`)}
+            {value.toLocaleString("mk-MK").replace(/,/g, ".")}
           </div>
         </article>
       ))}
