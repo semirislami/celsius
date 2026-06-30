@@ -12,6 +12,7 @@ export type ProductRow = {
   energy_class: string;
   badge: string | null;
   image_url: string;
+  images: string[] | null;
   guarantee_years: number | null;
   noise_db: number | null;
   review_count: number | null;
@@ -32,6 +33,7 @@ export function rowToProduct(r: ProductRow): Product {
     energyClass: r.energy_class as EnergyClass,
     badge: (r.badge as Badge | null) ?? null,
     imageUrl: r.image_url,
+    images: normalizeImages(r.images, r.image_url),
     guaranteeYears: r.guarantee_years ?? undefined,
     noiseDb: r.noise_db ?? undefined,
     reviewCount: r.review_count ?? undefined,
@@ -52,9 +54,32 @@ export function productToRow(p: Partial<Product>): Partial<ProductRow> {
   if (p.energyClass !== undefined) r.energy_class = p.energyClass;
   if (p.badge !== undefined) r.badge = p.badge ?? null;
   if (p.imageUrl !== undefined) r.image_url = p.imageUrl;
+  if (p.images !== undefined) {
+    const list = (p.images ?? []).filter(
+      (u): u is string => typeof u === "string" && u.length > 0
+    );
+    r.images = list;
+    // keep the legacy single-image column in sync with the cover (first) photo
+    if (list.length > 0) r.image_url = list[0];
+  }
   if (p.guaranteeYears !== undefined) r.guarantee_years = p.guaranteeYears ?? null;
   if (p.noiseDb !== undefined) r.noise_db = p.noiseDb ?? null;
   if (p.reviewCount !== undefined) r.review_count = p.reviewCount ?? null;
   if (p.specs !== undefined) r.specs = p.specs ?? null;
   return r;
+}
+
+/**
+ * Older rows predate the `images` column (or have an empty array). Fall back to
+ * the single `image_url` so every product always has at least one photo.
+ */
+function normalizeImages(
+  images: string[] | null | undefined,
+  imageUrl: string
+): string[] {
+  const list = Array.isArray(images)
+    ? images.filter((u): u is string => typeof u === "string" && u.length > 0)
+    : [];
+  if (list.length > 0) return list;
+  return imageUrl ? [imageUrl] : [];
 }

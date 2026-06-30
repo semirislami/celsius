@@ -32,7 +32,7 @@ export default async function ProductPage({
           <Breadcrumbs locale={locale} current={product.name} />
         </div>
         <div className="container grid gap-10 py-8 lg:grid-cols-2 lg:gap-14 lg:py-12">
-          <Gallery imageUrl={product.imageUrl} alt={product.name} />
+          <Gallery images={product.images ?? [product.imageUrl]} alt={product.name} />
           <ProductInfo product={product} locale={locale} />
         </div>
       </section>

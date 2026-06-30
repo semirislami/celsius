@@ -42,6 +42,19 @@ function readSpecs(raw: unknown): ProductSpecs {
   };
 }
 
+/** Normalizes an images payload into an ordered list of up to 10 URL strings. */
+function readImages(raw: unknown, fallback: unknown): string[] {
+  const arr = Array.isArray(raw) ? raw : [];
+  const list = arr
+    .filter((u): u is string => typeof u === "string")
+    .map((u) => u.trim())
+    .filter((u) => u.length > 0)
+    .slice(0, 10);
+  if (list.length > 0) return list;
+  const single = typeof fallback === "string" ? fallback.trim() : "";
+  return single ? [single] : [];
+}
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -101,7 +114,8 @@ function parseProductInput(
   const brandRaw = str(b.brand);
   const energyRaw = str(b.energyClass);
   const badgeRaw = str(b.badge);
-  const imageUrl = str(b.imageUrl);
+  const images = readImages(b.images, b.imageUrl);
+  const imageUrl = images[0] ?? "";
 
   if (!name) return { ok: false, error: "name is required" };
   // description is optional now — DB column is NOT NULL so an empty string is fine.
@@ -132,6 +146,7 @@ function parseProductInput(
     energyClass: energyRaw as EnergyClass,
     badge: (BADGES as readonly string[]).includes(badgeRaw) ? (badgeRaw as Badge) : null,
     imageUrl,
+    images,
     guaranteeYears: optNum(b.guaranteeYears),
     noiseDb: optNum(b.noiseDb),
     specs: hasSpecs ? specs : undefined

@@ -21,6 +21,12 @@ type Props = {
 // because the DB column is NOT NULL and the API validates it.
 const DEFAULT_ENERGY_CLASS = "A+++";
 
+const MAX_IMAGES = 10;
+
+// A photo in the form: once uploaded, `url` is the Supabase public URL. While
+// uploading, `url` holds a local object-URL preview.
+type ImageItem = { id: string; url: string; uploading: boolean; error?: boolean };
+
 export function ProductForm({ locale, mode }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -50,19 +56,74 @@ export function ProductForm({ locale, mode }: Props) {
   // untouched on edit (passthrough) so older products keep their data.
   const existingSpecs = initial?.specs;
 
-  // ---- image ----
-  const [imagePreview, setImagePreview] = useState<string | null>(initial?.imageUrl ?? null);
+  // ---- images (up to MAX_IMAGES) ----
+  const initialImages: ImageItem[] = (
+    initial?.images?.length
+      ? initial.images
+      : initial?.imageUrl
+        ? [initial.imageUrl]
+        : []
+  ).map((u) => ({ id: u, url: u, uploading: false }));
+  const [images, setImages] = useState<ImageItem[]>(initialImages);
   const fileRef = useRef<HTMLInputElement>(null);
+  const uploadingCount = images.filter((i) => i.uploading).length;
 
   // ---- submit state ----
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFile = (file: File | null) => {
-    if (!file) return;
-    setImagePreview(URL.createObjectURL(file));
+  // Each chosen file uploads immediately (in parallel) so the admin sees real
+  // thumbnails right away; the submit just sends the resulting URL list.
+  const addFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const room = MAX_IMAGES - images.length;
+    if (room <= 0) return;
+    const pending = Array.from(files)
+      .slice(0, room)
+      .map((file) => ({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        file,
+        preview: URL.createObjectURL(file)
+      }));
+
+    setImages((prev) => [
+      ...prev,
+      ...pending.map((p) => ({ id: p.id, url: p.preview, uploading: true }))
+    ]);
+
+    await Promise.all(
+      pending.map(async (p) => {
+        try {
+          const { publicUrl } = await uploadProductImage(p.file);
+          setImages((prev) =>
+            prev.map((it) =>
+              it.id === p.id ? { ...it, url: publicUrl, uploading: false } : it
+            )
+          );
+        } catch {
+          setImages((prev) =>
+            prev.map((it) =>
+              it.id === p.id ? { ...it, uploading: false, error: true } : it
+            )
+          );
+        }
+      })
+    );
   };
+
+  const removeImage = (id: string) =>
+    setImages((prev) => prev.filter((it) => it.id !== id));
+
+  const moveImage = (id: string, dir: -1 | 1) =>
+    setImages((prev) => {
+      const idx = prev.findIndex((it) => it.id === id);
+      const target = idx + dir;
+      if (idx < 0 || target < 0 || target >= prev.length) return prev;
+      const copy = [...prev];
+      [copy[idx], copy[target]] = [copy[target], copy[idx]];
+      return copy;
+    });
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -70,15 +131,13 @@ export function ProductForm({ locale, mode }: Props) {
     setSubmitting(true);
 
     try {
-      const fd = new FormData(e.currentTarget);
-      const file = fd.get("image");
-      const hasNewFile = file instanceof File && file.size > 0;
-
-      let imageUrl = initial?.imageUrl ?? "";
-      if (hasNewFile) {
-        const result = await uploadProductImage(file as File);
-        imageUrl = result.publicUrl;
-      } else if (!isEdit) {
+      if (uploadingCount > 0) {
+        throw new Error(t("admin.form.errors.imageUploading"));
+      }
+      const imageUrls = images
+        .filter((it) => !it.uploading && !it.error && it.url)
+        .map((it) => it.url);
+      if (imageUrls.length === 0) {
         throw new Error(t("admin.form.errors.image"));
       }
 
@@ -92,10 +151,10 @@ export function ProductForm({ locale, mode }: Props) {
         brand,
         energyClass: DEFAULT_ENERGY_CLASS,
         badge: null,
+        images: imageUrls,
         // Preserve any specs the product already had; the form no longer edits them.
         specs: existingSpecs
       };
-      if (!isEdit || hasNewFile) payload.imageUrl = imageUrl;
 
       const productId = isEdit
         ? (mode as { kind: "edit"; product: Product }).product.id
@@ -180,7 +239,7 @@ export function ProductForm({ locale, mode }: Props) {
           </Link>
           <button
             type="submit"
-            disabled={submitting || deleting}
+            disabled={submitting || deleting || uploadingCount > 0}
             className="inline-flex items-center justify-center rounded-full bg-celsius-500 px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-celsius-600 disabled:opacity-60"
           >
             {submitting
@@ -237,43 +296,85 @@ export function ProductForm({ locale, mode }: Props) {
           </Field>
         </Section>
 
-        {/* Image */}
+        {/* Images */}
         <Section title={t("admin.form.section.media")}>
           <input
             ref={fileRef}
             type="file"
-            name="image"
             accept="image/png,image/jpeg,image/webp,image/svg+xml"
-            required={!isEdit}
-            onChange={(e) => handleFile(e.currentTarget.files?.[0] ?? null)}
+            multiple
+            onChange={(e) => {
+              addFiles(e.currentTarget.files);
+              e.currentTarget.value = "";
+            }}
             className="sr-only"
-            id="image"
+            id="images"
           />
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="block w-full rounded-2xl border-2 border-dashed border-ink/15 bg-canvas-soft p-4 text-left transition hover:border-celsius-300 hover:bg-celsius-50"
-          >
-            {imagePreview ? (
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-white ring-1 ring-ink/5">
-                <Image src={imagePreview} alt="" fill sizes="320px" className="object-cover" unoptimized />
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-2 py-8 text-ink-muted">
+
+          {images.length > 0 && (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {images.map((img, i) => (
+                <div
+                  key={img.id}
+                  className="group relative aspect-square overflow-hidden rounded-2xl bg-canvas-soft ring-1 ring-ink/5"
+                >
+                  <Image src={img.url} alt="" fill sizes="160px" className="object-cover" unoptimized />
+
+                  {i === 0 && !img.uploading && !img.error && (
+                    <span className="absolute left-2 top-2 rounded-full bg-celsius-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-white shadow">
+                      {t("admin.form.fields.cover")}
+                    </span>
+                  )}
+
+                  {img.uploading && (
+                    <div className="absolute inset-0 grid place-items-center bg-white/60 backdrop-blur-sm">
+                      <span className="h-6 w-6 animate-spin rounded-full border-2 border-celsius-500 border-t-transparent" />
+                    </div>
+                  )}
+                  {img.error && (
+                    <div className="absolute inset-0 grid place-items-center bg-rose-50/85 px-2 text-center text-xs font-semibold text-rose-600">
+                      {t("admin.form.errors.uploadShort")}
+                    </div>
+                  )}
+
+                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-ink/70 to-transparent p-2 opacity-0 transition group-hover:opacity-100">
+                    <div className="flex gap-1">
+                      <IconBtn label="←" disabled={i === 0} onClick={() => moveImage(img.id, -1)} />
+                      <IconBtn label="→" disabled={i === images.length - 1} onClick={() => moveImage(img.id, 1)} />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeImage(img.id)}
+                      aria-label={t("admin.form.fields.imageRemove")}
+                      className="grid h-7 w-7 place-items-center rounded-full bg-white/90 text-rose-600 transition hover:bg-white"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {images.length < MAX_IMAGES && (
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="mt-3 block w-full rounded-2xl border-2 border-dashed border-ink/15 bg-canvas-soft p-4 text-left transition hover:border-celsius-300 hover:bg-celsius-50"
+            >
+              <div className="flex flex-col items-center gap-2 py-6 text-ink-muted">
                 <span className="grid h-12 w-12 place-items-center rounded-full bg-white text-celsius-500 ring-1 ring-ink/5">
                   <ImagePlus size={20} />
                 </span>
                 <span className="text-sm font-medium text-ink">{t("admin.form.fields.image")}</span>
                 <span className="text-xs">{t("admin.form.fields.imageHint")}</span>
               </div>
-            )}
-          </button>
-          {imagePreview && (
-            <button type="button" onClick={() => fileRef.current?.click()} className="mt-3 w-full rounded-full bg-canvas-soft px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted hover:bg-canvas-muted hover:text-ink">
-              {t("admin.form.fields.imageReplace")}
             </button>
           )}
-          <p className="mt-3 text-xs text-ink-muted">{t("admin.form.fields.imageHint")}</p>
+
+          <p className="mt-3 text-xs text-ink-muted">
+            {t("admin.form.fields.imagesCount", { count: images.length, max: MAX_IMAGES })}
+          </p>
         </Section>
 
         {/* Перформанси */}
@@ -343,5 +444,26 @@ function Field({
       <div className="mt-1.5">{children}</div>
       {hint && <p className="mt-1 text-xs text-ink-muted">{hint}</p>}
     </div>
+  );
+}
+
+function IconBtn({
+  label,
+  onClick,
+  disabled
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="grid h-7 w-7 place-items-center rounded-full bg-white/90 text-ink transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      <span className="text-sm leading-none">{label}</span>
+    </button>
   );
 }

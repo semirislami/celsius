@@ -85,6 +85,25 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   if (has("guaranteeYears")) patch.guaranteeYears = optNum(b.guaranteeYears);
   if (has("noiseDb")) patch.noiseDb = optNum(b.noiseDb);
 
+  if (has("images")) {
+    const arr = Array.isArray(b.images) ? b.images : [];
+    const images = arr
+      .filter((u): u is string => typeof u === "string")
+      .map((u) => u.trim())
+      .filter((u) => u.length > 0)
+      .slice(0, 10);
+    patch.images = images;
+    if (images.length > 0) patch.imageUrl = images[0];
+    // Best-effort cleanup of any photos that were removed in this edit.
+    const previous = existing.images?.length
+      ? existing.images
+      : existing.imageUrl
+        ? [existing.imageUrl]
+        : [];
+    const removed = previous.filter((u) => !images.includes(u));
+    for (const u of removed) await deleteUploadedImage(u);
+  }
+
   if (has("specs")) {
     const r = (b.specs ?? {}) as Record<string, unknown>;
     const s = (k: string) => (typeof r[k] === "string" ? (r[k] as string).trim() : "");
@@ -144,7 +163,12 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
       { status: 404 }
     );
   }
-  await deleteUploadedImage(existing.imageUrl);
+  const urls = existing.images?.length
+    ? existing.images
+    : existing.imageUrl
+      ? [existing.imageUrl]
+      : [];
+  for (const u of urls) await deleteUploadedImage(u);
   const ok = await deleteProduct(params.id);
   if (!ok) {
     return NextResponse.json(

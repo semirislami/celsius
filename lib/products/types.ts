@@ -64,6 +64,7 @@ export interface Product {
   energyClass: EnergyClass;
   badge: Badge | null;
   imageUrl: string;
+  images?: string[];
   guaranteeYears?: number;
   noiseDb?: number;
   reviewCount?: number;

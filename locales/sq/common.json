@@ -374,9 +374,12 @@
         "badgeNone": "Pa etiketë",
         "guaranteeYears": "Garancia (vjet)",
         "noiseDb": "Zhurma (dB)",
-        "image": "Imazhi i produktit",
-        "imageHint": "PNG, JPG ose WebP, maksimumi 5MB.",
+        "image": "Fotot e produktit",
+        "imageHint": "PNG, JPG ose WebP, maksimumi 5MB për foto. Deri në 10 foto.",
         "imageReplace": "Zëvendëso imazhin",
+        "cover": "Kryesore",
+        "imageRemove": "Hiq foton",
+        "imagesCount": "{{count}} nga {{max}} foto",
         "specsCooling": "Kapaciteti i ftohjes",
         "specsHeating": "Kapaciteti i ngrohjes",
         "specsSeer": "SEER / SCOP",
@@ -395,7 +398,9 @@
       "back": "Mbrapa te admin",
       "errors": {
         "required": "Kjo fushë është e detyrueshme",
-        "image": "Ngarko një imazh",
+        "image": "Ngarko të paktën një foto",
+        "imageUploading": "Prisni të përfundojë ngarkimi i fotove.",
+        "uploadShort": "Dështoi",
         "generic": "Ruajtja dështoi. Provoni përsëri."
       }
     },
