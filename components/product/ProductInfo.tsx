@@ -37,7 +37,7 @@ export function ProductInfo({ product, locale }: Props) {
         {product.name}
       </h1>
       {product.description && (
-        <p className="mt-4 text-ink-muted">{product.description}</p>
+        <p className="mt-4 whitespace-pre-line text-ink-muted">{product.description}</p>
       )}
 
       <div className="mt-6 flex items-baseline gap-3">

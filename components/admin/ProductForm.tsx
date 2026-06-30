@@ -17,9 +17,8 @@ type Props = {
   mode: Mode;
 };
 
-// energyClass is no longer exposed in the form — coolingEnergyClass /
-// heatingEnergyClass in the specs panel are the user-facing fields. We still
-// store a top-level value because the DB column is NOT NULL.
+// energyClass is not exposed in the form anymore. We still send a default
+// because the DB column is NOT NULL and the API validates it.
 const DEFAULT_ENERGY_CLASS = "A+++";
 
 export function ProductForm({ locale, mode }: Props) {
@@ -31,9 +30,7 @@ export function ProductForm({ locale, mode }: Props) {
   // ---- core fields ----
   const [name, setName] = useState(initial?.name ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
-  // description is no longer surfaced in the form — kept as a passthrough so
-  // existing rows preserve their text on update. New products send empty "".
-  const description = initial?.description ?? "";
+  const [description, setDescription] = useState(initial?.description ?? "");
   const [priceMkd, setPriceMkd] = useState<string>(
     initial ? String(initial.priceMkd) : ""
   );
@@ -49,23 +46,9 @@ export function ProductForm({ locale, mode }: Props) {
       : "vivax";
   const [brand, setBrand] = useState<string>(initialBrand);
 
-  // ---- specs (screenshot fields) ----
-  const s0 = initial?.specs ?? {};
-  const [isInverter, setIsInverter] = useState<boolean>(!!s0.isInverter);
-  const [maxPowerKw, setMaxPowerKw] = useState(s0.maxPowerKw ?? "");
-  const [coolingHeatingPower, setCoolingHeatingPower] = useState(s0.coolingHeatingPower ?? "");
-  const [coolingEnergyClass, setCoolingEnergyClass] = useState(s0.coolingEnergyClass ?? "");
-  const [heatingEnergyClass, setHeatingEnergyClass] = useState(s0.heatingEnergyClass ?? "");
-  const [airCirculation, setAirCirculation] = useState(s0.airCirculation ?? "");
-  const [operatingTemp, setOperatingTemp] = useState(s0.operatingTemp ?? "");
-  const [seer, setSeer] = useState(s0.seer ?? "");
-  const [eer, setEer] = useState(s0.eer ?? "");
-  const [scop, setScop] = useState(s0.scop ?? "");
-  const [cop, setCop] = useState(s0.cop ?? "");
-  const [noiseLevel, setNoiseLevel] = useState(s0.noiseLevel ?? "");
-  const [annualConsumptionHeating, setAnnualConsumptionHeating] = useState(s0.annualConsumptionHeating ?? "");
-  const [annualConsumptionCooling, setAnnualConsumptionCooling] = useState(s0.annualConsumptionCooling ?? "");
-  const [installationKitIncluded, setInstallationKitIncluded] = useState<boolean>(!!s0.installationKitIncluded);
+  // Technical specs are no longer edited here. Existing values are preserved
+  // untouched on edit (passthrough) so older products keep their data.
+  const existingSpecs = initial?.specs;
 
   // ---- image ----
   const [imagePreview, setImagePreview] = useState<string | null>(initial?.imageUrl ?? null);
@@ -109,23 +92,8 @@ export function ProductForm({ locale, mode }: Props) {
         brand,
         energyClass: DEFAULT_ENERGY_CLASS,
         badge: null,
-        specs: {
-          isInverter,
-          maxPowerKw: maxPowerKw || undefined,
-          coolingHeatingPower: coolingHeatingPower || undefined,
-          coolingEnergyClass: coolingEnergyClass || undefined,
-          heatingEnergyClass: heatingEnergyClass || undefined,
-          airCirculation: airCirculation || undefined,
-          operatingTemp: operatingTemp || undefined,
-          seer: seer || undefined,
-          eer: eer || undefined,
-          scop: scop || undefined,
-          cop: cop || undefined,
-          noiseLevel: noiseLevel || undefined,
-          annualConsumptionHeating: annualConsumptionHeating || undefined,
-          annualConsumptionCooling: annualConsumptionCooling || undefined,
-          installationKitIncluded
-        }
+        // Preserve any specs the product already had; the form no longer edits them.
+        specs: existingSpecs
       };
       if (!isEdit || hasNewFile) payload.imageUrl = imageUrl;
 
@@ -256,6 +224,17 @@ export function ProductForm({ locale, mode }: Props) {
               <input id="oldPriceMkd" name="oldPriceMkd" type="number" min={0} step={1} value={oldPriceMkd} onChange={(e) => setOldPriceMkd(e.target.value)} className={inputCls} />
             </Field>
           </div>
+          <Field id="description" label={t("admin.form.fields.description")}>
+            <textarea
+              id="description"
+              name="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={7}
+              placeholder={t("admin.form.fields.descriptionPlaceholder")}
+              className={`${inputCls} resize-y leading-relaxed`}
+            />
+          </Field>
         </Section>
 
         {/* Image */}
@@ -312,68 +291,6 @@ export function ProductForm({ locale, mode }: Props) {
           </div>
         </Section>
 
-        {/* Главни карактеристики (left) */}
-        <Section title={t("admin.form.specPanel.mainLeft")} className="lg:col-span-3">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" checked={isInverter} onChange={(e) => setIsInverter(e.target.checked)} className="h-4 w-4 rounded border-ink/20 text-celsius-500 focus:ring-celsius-300" />
-            <span className="text-sm font-medium text-ink">{t("admin.form.specs.isInverter")}</span>
-          </label>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <Field id="maxPowerKw" label={t("admin.form.specs.maxPowerKw")}>
-              <input id="maxPowerKw" value={maxPowerKw} onChange={(e) => setMaxPowerKw(e.target.value)} placeholder="3.7kW" className={inputCls} />
-            </Field>
-            <Field id="coolingHeatingPower" label={t("admin.form.specs.coolingHeatingPower")}>
-              <input id="coolingHeatingPower" value={coolingHeatingPower} onChange={(e) => setCoolingHeatingPower(e.target.value)} placeholder="3700/3800W" className={inputCls} />
-            </Field>
-            <Field id="coolingEnergyClass" label={t("admin.form.specs.coolingEnergyClass")}>
-              <input id="coolingEnergyClass" value={coolingEnergyClass} onChange={(e) => setCoolingEnergyClass(e.target.value)} placeholder="A++" className={inputCls} />
-            </Field>
-            <Field id="heatingEnergyClass" label={t("admin.form.specs.heatingEnergyClass")}>
-              <input id="heatingEnergyClass" value={heatingEnergyClass} onChange={(e) => setHeatingEnergyClass(e.target.value)} placeholder="A+" className={inputCls} />
-            </Field>
-            <Field id="airCirculation" label={t("admin.form.specs.airCirculation")}>
-              <input id="airCirculation" value={airCirculation} onChange={(e) => setAirCirculation(e.target.value)} placeholder="до 570m³/h" className={inputCls} />
-            </Field>
-            <Field id="operatingTemp" label={t("admin.form.specs.operatingTemp")}>
-              <input id="operatingTemp" value={operatingTemp} onChange={(e) => setOperatingTemp(e.target.value)} placeholder="Cooling:-15-53/Heating:-20-30°C" className={inputCls} />
-            </Field>
-          </div>
-        </Section>
-
-        {/* Главни карактеристики (right top) */}
-        <Section title={t("admin.form.specPanel.mainRight")} className="lg:col-span-3">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <Field id="seer" label={t("admin.form.specs.seer")}>
-              <input id="seer" value={seer} onChange={(e) => setSeer(e.target.value)} placeholder="6.1" className={inputCls} />
-            </Field>
-            <Field id="eer" label={t("admin.form.specs.eer")}>
-              <input id="eer" value={eer} onChange={(e) => setEer(e.target.value)} placeholder="3" className={inputCls} />
-            </Field>
-            <Field id="scop" label={t("admin.form.specs.scop")}>
-              <input id="scop" value={scop} onChange={(e) => setScop(e.target.value)} placeholder="4" className={inputCls} />
-            </Field>
-            <Field id="cop" label={t("admin.form.specs.cop")}>
-              <input id="cop" value={cop} onChange={(e) => setCop(e.target.value)} placeholder="3.4" className={inputCls} />
-            </Field>
-            <Field id="noiseLevel" label={t("admin.form.specs.noiseLevel")}>
-              <input id="noiseLevel" value={noiseLevel} onChange={(e) => setNoiseLevel(e.target.value)} placeholder="53dB" className={inputCls} />
-            </Field>
-            <Field id="annualConsumptionHeating" label={t("admin.form.specs.annualHeating")}>
-              <input id="annualConsumptionHeating" value={annualConsumptionHeating} onChange={(e) => setAnnualConsumptionHeating(e.target.value)} placeholder="770kWh/a" className={inputCls} />
-            </Field>
-            <Field id="annualConsumptionCooling" label={t("admin.form.specs.annualCooling")}>
-              <input id="annualConsumptionCooling" value={annualConsumptionCooling} onChange={(e) => setAnnualConsumptionCooling(e.target.value)} placeholder="196kWh/a" className={inputCls} />
-            </Field>
-          </div>
-        </Section>
-
-        {/* Includes */}
-        <Section title={t("admin.form.specPanel.includes")} className="lg:col-span-3">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" checked={installationKitIncluded} onChange={(e) => setInstallationKitIncluded(e.target.checked)} className="h-4 w-4 rounded border-ink/20 text-celsius-500 focus:ring-celsius-300" />
-            <span className="text-sm font-medium text-ink">{t("admin.form.specs.installKit")}</span>
-          </label>
-        </Section>
       </div>
     </form>
   );
