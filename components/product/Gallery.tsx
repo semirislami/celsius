@@ -21,7 +21,7 @@ export function Gallery({ images, alt }: Props) {
     });
 
   return (
-    <div className="space-y-3">
+    <div className="min-w-0 space-y-3">
       <div className="group relative aspect-[4/3] overflow-hidden rounded-3xl bg-canvas-soft ring-1 ring-ink/5">
         {current ? (
           <Image

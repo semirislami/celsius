@@ -17,7 +17,7 @@ export function ProductInfo({ product, locale }: Props) {
   const guaranteeYears = product.guaranteeYears ?? 5;
 
   return (
-    <div className="flex flex-col">
+    <div className="flex min-w-0 flex-col">
       <div className="flex items-center gap-3">
         <span className="rounded-full bg-heating-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-heating-500">
           {product.badge ? t(`shop.badge.${product.badge}`) : t("product.badge")}
