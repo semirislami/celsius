@@ -7,6 +7,7 @@ import { formatMkd } from "@/lib/products/format";
 import type { Product } from "@/lib/products/types";
 import type { Locale } from "@/lib/i18n/settings";
 import { WhatsAppButton } from "@/components/common/WhatsAppButton";
+import { ProductDescription } from "@/components/product/ProductDescription";
 
 type Props = { product: Product; locale: Locale };
 
@@ -36,9 +37,7 @@ export function ProductInfo({ product, locale }: Props) {
       <h1 className="mt-4 font-display text-3xl md:text-4xl lg:text-[42px] font-semibold leading-[1.1] tracking-[-0.02em] text-ink">
         {product.name}
       </h1>
-      {product.description && (
-        <p className="mt-4 whitespace-pre-line text-ink-muted">{product.description}</p>
-      )}
+      {product.description && <ProductDescription text={product.description} />}
 
       <div className="mt-6 flex items-baseline gap-3">
         <span className="text-3xl font-semibold text-celsius-500">
