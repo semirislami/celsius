@@ -7,7 +7,7 @@ import { useRef, useState } from "react";
 import { ArrowLeft, ImagePlus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Locale } from "@/lib/i18n/settings";
-import { BRANDS, CAPACITIES, type Product } from "@/lib/products/types";
+import { BRANDS, CAPACITIES, CATEGORIES, DEFAULT_CATEGORY, type Product } from "@/lib/products/types";
 import { uploadProductImage } from "@/lib/products/uploadClient";
 
 type Mode = { kind: "create" } | { kind: "edit"; product: Product };
@@ -51,6 +51,11 @@ export function ProductForm({ locale, mode }: Props) {
       ? initial.brand
       : "vivax";
   const [brand, setBrand] = useState<string>(initialBrand);
+  const initialCategory =
+    initial?.category && (CATEGORIES as readonly string[]).includes(initial.category)
+      ? initial.category
+      : DEFAULT_CATEGORY;
+  const [category, setCategory] = useState<string>(initialCategory);
 
   // Technical specs are no longer edited here. Existing values are preserved
   // untouched on edit (passthrough) so older products keep their data.
@@ -149,6 +154,7 @@ export function ProductForm({ locale, mode }: Props) {
         oldPriceMkd: oldPriceMkd ? Number(oldPriceMkd) : undefined,
         capacityBtu: Number(capacityBtu),
         brand,
+        category,
         energyClass: DEFAULT_ENERGY_CLASS,
         badge: null,
         images: imageUrls,
@@ -266,15 +272,26 @@ export function ProductForm({ locale, mode }: Props) {
           <Field id="slug" label={t("admin.form.fields.slug")} hint={t("admin.form.fields.slugHint")}>
             <input id="slug" name="slug" value={slug} onChange={(e) => setSlug(e.target.value)} className={inputCls} placeholder="vivax-pro-quiet-12000" />
           </Field>
-          <Field id="brand" label={t("admin.form.fields.brand")} required>
-            <select id="brand" name="brand" required value={brand} onChange={(e) => setBrand(e.target.value)} className={inputCls}>
-              {BRANDS.map((b) => (
-                <option key={b} value={b}>
-                  {t(`shop.filters.brands.${b}`)}
-                </option>
-              ))}
-            </select>
-          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field id="brand" label={t("admin.form.fields.brand")} required>
+              <select id="brand" name="brand" required value={brand} onChange={(e) => setBrand(e.target.value)} className={inputCls}>
+                {BRANDS.map((b) => (
+                  <option key={b} value={b}>
+                    {t(`shop.filters.brands.${b}`)}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field id="category" label={t("admin.form.fields.category")} required>
+              <select id="category" name="category" required value={category} onChange={(e) => setCategory(e.target.value)} className={inputCls}>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {t(`shop.categories.${c}.title`)}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field id="priceMkd" label={t("admin.form.fields.priceMkd")} required>
               <input id="priceMkd" name="priceMkd" type="number" min={0} step={1} required value={priceMkd} onChange={(e) => setPriceMkd(e.target.value)} className={inputCls} />

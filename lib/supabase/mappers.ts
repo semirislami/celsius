@@ -1,4 +1,5 @@
-import type { Badge, Brand, EnergyClass, Product, ProductSpecs } from "@/lib/products/types";
+import { DEFAULT_CATEGORY, isCategory } from "@/lib/products/types";
+import type { Badge, Brand, Category, EnergyClass, Product, ProductSpecs } from "@/lib/products/types";
 
 export type ProductRow = {
   id: string;
@@ -9,6 +10,7 @@ export type ProductRow = {
   old_price_mkd: number | null;
   capacity_btu: number;
   brand: string;
+  category: string | null;
   energy_class: string;
   badge: string | null;
   image_url: string;
@@ -30,6 +32,7 @@ export function rowToProduct(r: ProductRow): Product {
     oldPriceMkd: r.old_price_mkd ?? undefined,
     capacityBtu: r.capacity_btu,
     brand: r.brand as Brand,
+    category: isCategory(r.category) ? (r.category as Category) : DEFAULT_CATEGORY,
     energyClass: r.energy_class as EnergyClass,
     badge: (r.badge as Badge | null) ?? null,
     imageUrl: r.image_url,
@@ -51,6 +54,7 @@ export function productToRow(p: Partial<Product>): Partial<ProductRow> {
   if (p.oldPriceMkd !== undefined) r.old_price_mkd = p.oldPriceMkd ?? null;
   if (p.capacityBtu !== undefined) r.capacity_btu = p.capacityBtu;
   if (p.brand !== undefined) r.brand = p.brand;
+  if (p.category !== undefined) r.category = p.category;
   if (p.energyClass !== undefined) r.energy_class = p.energyClass;
   if (p.badge !== undefined) r.badge = p.badge ?? null;
   if (p.imageUrl !== undefined) r.image_url = p.imageUrl;

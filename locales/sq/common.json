@@ -64,7 +64,23 @@
       "showing": "Po shfaqen {{shown}} nga {{total}}",
       "none": "Asnjë produkt nuk i përshtatet filtrave."
     },
-    "pagination": { "previous": "Mbrapa", "next": "Përpara" }
+    "pagination": { "previous": "Mbrapa", "next": "Përpara" },
+    "categories": {
+      "title": "Zgjidhni llojin e sistemit",
+      "subtitle": "Zgjidhni kategorinë që i përshtatet hapësirës suaj — një ose disa njësi të brendshme.",
+      "browse": "Shfleto",
+      "back": "Të gjitha kategoritë",
+      "count_one": "{{count}} produkt",
+      "count_other": "{{count}} produkte",
+      "split": {
+        "title": "Sistem Split",
+        "desc": "Një njësi e brendshme dhe një e jashtme — ideale për një dhomë ose dhomë gjumi."
+      },
+      "multi-split": {
+        "title": "Sistem Multi-Split",
+        "desc": "Një njësi e jashtme e lidhur me disa njësi të brendshme — për disa dhoma me një sistem të vetëm."
+      }
+    }
   },
   "home": {
     "hero": {
@@ -369,6 +385,7 @@
         "oldPriceMkd": "Çmimi i vjetër (opsional)",
         "capacityBtu": "Kapaciteti (BTU)",
         "brand": "Marka",
+        "category": "Lloji i sistemit",
         "energyClass": "Klasa energjetike",
         "badge": "Etiketa",
         "badgeNone": "Pa etiketë",

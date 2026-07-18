@@ -4,9 +4,12 @@ import { createProduct, listProducts } from "@/lib/products/store";
 import {
   BADGES,
   BRANDS,
+  DEFAULT_CATEGORY,
   ENERGY_CLASSES,
+  isCategory,
   type Badge,
   type Brand,
+  type Category,
   type EnergyClass,
   type NewProductInput,
   type ProductSpecs
@@ -112,6 +115,7 @@ function parseProductInput(
   const priceMkd = num(b.priceMkd);
   const capacityBtu = num(b.capacityBtu);
   const brandRaw = str(b.brand);
+  const categoryRaw = str(b.category);
   const energyRaw = str(b.energyClass);
   const badgeRaw = str(b.badge);
   const images = readImages(b.images, b.imageUrl);
@@ -143,6 +147,7 @@ function parseProductInput(
     oldPriceMkd: optNum(b.oldPriceMkd),
     capacityBtu,
     brand: brandRaw as Brand,
+    category: isCategory(categoryRaw) ? (categoryRaw as Category) : DEFAULT_CATEGORY,
     energyClass: energyRaw as EnergyClass,
     badge: (BADGES as readonly string[]).includes(badgeRaw) ? (badgeRaw as Badge) : null,
     imageUrl,

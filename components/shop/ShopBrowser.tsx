@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ChevronRight, Search } from "lucide-react";
+import { ArrowLeft, ChevronRight, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Locale } from "@/lib/i18n/settings";
-import type { Product } from "@/lib/products/types";
+import type { Category, Product } from "@/lib/products/types";
 import { ProductCard } from "./ProductCard";
 import { ShopFilters, initialFilters, type ShopFilterState } from "./ShopFilters";
 import { Pagination } from "./Pagination";
@@ -13,17 +13,23 @@ import { EmptyState, NoResults } from "./EmptyState";
 
 const PAGE_SIZE = 9;
 
-type Props = { locale: Locale; products: Product[] };
+type Props = { locale: Locale; products: Product[]; category: Category };
 
-export function ShopBrowser({ locale, products }: Props) {
+export function ShopBrowser({ locale, products, category }: Props) {
   const { t } = useTranslation();
   const [filters, setFilters] = useState<ShopFilterState>(initialFilters);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
+  // Only products in the chosen family (Split / Multi-Split) are browsable here.
+  const scoped = useMemo(
+    () => products.filter((p) => p.category === category),
+    [products, category]
+  );
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return products.filter((p) => {
+    return scoped.filter((p) => {
       if (p.priceMkd > filters.maxPrice) return false;
       if (filters.brands.length && !filters.brands.includes(p.brand)) return false;
       if (filters.capacities.length && !filters.capacities.includes(p.capacityBtu)) return false;
@@ -34,16 +40,16 @@ export function ShopBrowser({ locale, products }: Props) {
       }
       return true;
     });
-  }, [products, filters, search]);
+  }, [scoped, filters, search]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount);
   const visible = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
-  if (products.length === 0) {
+  if (scoped.length === 0) {
     return (
       <div className="container py-12 md:py-16">
-        <Header locale={locale} />
+        <Header locale={locale} category={category} />
         <div className="mt-10">
           <EmptyState locale={locale} />
         </div>
@@ -53,7 +59,7 @@ export function ShopBrowser({ locale, products }: Props) {
 
   return (
     <div className="container py-10 md:py-14">
-      <Header locale={locale} />
+      <Header locale={locale} category={category} />
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4 lg:hidden">
         <SearchBox
@@ -107,7 +113,7 @@ export function ShopBrowser({ locale, products }: Props) {
   );
 }
 
-function Header({ locale }: { locale: Locale }) {
+function Header({ locale, category }: { locale: Locale; category: Category }) {
   const { t } = useTranslation();
   return (
     <div>
@@ -116,9 +122,22 @@ function Header({ locale }: { locale: Locale }) {
           {t("shop.breadcrumbHome")}
         </Link>
         <ChevronRight size={14} className="text-ink/30" />
-        <span className="text-ink">{t("shop.breadcrumbShop")}</span>
+        <Link href={`/${locale}/shop`} className="hover:text-celsius-500">
+          {t("shop.breadcrumbShop")}
+        </Link>
+        <ChevronRight size={14} className="text-ink/30" />
+        <span className="text-ink">{t(`shop.categories.${category}.title`)}</span>
       </nav>
-      <h1 className="mt-3 heading-display text-ink">{t("shop.title")}</h1>
+      <h1 className="mt-3 heading-display text-ink">
+        {t(`shop.categories.${category}.title`)}
+      </h1>
+      <Link
+        href={`/${locale}/shop`}
+        className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-ink-muted transition hover:text-celsius-500"
+      >
+        <ArrowLeft size={15} />
+        {t("shop.categories.back")}
+      </Link>
     </div>
   );
 }

@@ -6,8 +6,10 @@ import {
   BADGES,
   BRANDS,
   ENERGY_CLASSES,
+  isCategory,
   type Badge,
   type Brand,
+  type Category,
   type EnergyClass,
   type ProductPatch,
   type ProductSpecs
@@ -71,6 +73,12 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     if (!(BRANDS as readonly string[]).includes(v))
       return NextResponse.json({ error: "brand is invalid" }, { status: 400 });
     patch.brand = v as Brand;
+  }
+  if (has("category")) {
+    const v = str(b.category);
+    if (!isCategory(v))
+      return NextResponse.json({ error: "category is invalid" }, { status: 400 });
+    patch.category = v as Category;
   }
   if (has("energyClass")) {
     const v = str(b.energyClass);

@@ -16,6 +16,19 @@ export function brandLabel(brand: string): string {
 export const ENERGY_CLASSES = ["A+++", "A++", "A+"] as const;
 export type EnergyClass = (typeof ENERGY_CLASSES)[number];
 
+/**
+ * Product family shown as the first choice on the shop page.
+ * "split"       — a single indoor + outdoor unit (the common wall unit)
+ * "multi-split" — one outdoor unit driving several indoor units
+ */
+export const CATEGORIES = ["split", "multi-split"] as const;
+export type Category = (typeof CATEGORIES)[number];
+export const DEFAULT_CATEGORY: Category = "split";
+
+export function isCategory(value: string | undefined | null): value is Category {
+  return !!value && (CATEGORIES as readonly string[]).includes(value);
+}
+
 export const BADGES = ["best-seller", "new", "top-power"] as const;
 export type Badge = (typeof BADGES)[number];
 
@@ -61,6 +74,7 @@ export interface Product {
   oldPriceMkd?: number;
   capacityBtu: number;
   brand: Brand;
+  category: Category;
   energyClass: EnergyClass;
   badge: Badge | null;
   imageUrl: string;
